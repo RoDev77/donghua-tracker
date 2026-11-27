@@ -26,6 +26,7 @@ GOOGLE_APPLICATION_CREDENTIALS=/path/ke/service-account.json npm run seed
 - Statistik ringkas
 - Ekspor/impor JSON
 - Toggle tema gelap/terang
+- Bagian "Akhir-akhir Ini Sering Ditonton" (bisa diatur dari form)
 - Pilihan tampilan Tabel / Kartu
 - Tampilan kartu responsif di layar kecil
 - Tombol kembali ke atas dan favicon khusus

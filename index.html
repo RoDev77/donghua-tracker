@@ -323,6 +323,8 @@
   .modal-head p { margin: 5px 0 0; color: var(--muted); font-size: 12.5px; }
   .modal-head .eyebrow { margin-bottom: 5px; }
   .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 22px 24px; }
+  .check-label { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; color: var(--text); font-size: 12.5px; }
+  .check-label input { width: 17px; height: 17px; accent-color: var(--accent); cursor: pointer; flex: none; }
   .field { display: flex; flex-direction: column; gap: 7px; }
   .field.full { grid-column: 1 / -1; }
   .field label { font-size: 12px; font-weight: 700; color: #b9c3d8; }
@@ -356,6 +358,38 @@
     color: var(--accent); background: rgba(60,224,196,.1);
     border: 1px solid rgba(60,224,196,.22); padding: 3px 9px; border-radius: 99px;
   }
+
+  /* Featured / sering ditonton */
+  .featured { margin-bottom: 22px; animation: rise .55s ease both; }
+  .featured-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+  .featured-head h2 { margin: 0; font-size: 17px; letter-spacing: -.3px; }
+  .featured-count {
+    font-size: 10.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .6px;
+    color: var(--hiatus); background: rgba(251,191,36,.12); border: 1px solid rgba(251,191,36,.25);
+    padding: 5px 11px; border-radius: 99px;
+  }
+  .featured-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+  .featured-card {
+    position: relative; overflow: hidden; cursor: pointer;
+    background: linear-gradient(155deg, rgba(251,191,36,.10), var(--panel) 55%);
+    border: 1px solid rgba(251,191,36,.20); border-radius: 16px; padding: 14px;
+    transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+  }
+  .featured-card::before {
+    content: ''; position: absolute; inset: 0 0 auto 0; height: 3px;
+    background: linear-gradient(90deg, var(--hiatus), var(--accent), var(--accent-2));
+  }
+  .featured-card:hover { transform: translateY(-4px); border-color: var(--hiatus); box-shadow: 0 14px 34px rgba(0,0,0,.22); }
+  .featured-rank {
+    position: absolute; right: 12px; top: 12px; font-size: 18px; font-weight: 800; opacity: .35; letter-spacing: -1px;
+  }
+  .featured-title { display: flex; align-items: flex-start; gap: 9px; padding-right: 20px; }
+  .featured-title .title-cell { font-size: 13px; line-height: 1.35; }
+  .featured-info { display: flex; align-items: center; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
+  .featured-info .ep-pill { font-size: 11.5px; padding: 4px 7px; }
+  .featured-hint { margin-top: 9px; font-size: 10px; color: var(--muted); font-weight: 700; }
+  @media (max-width: 1100px) { .featured-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (max-width: 760px) { .featured-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
   /* Hero chip */
   .hero-chip {
@@ -464,6 +498,17 @@
       <div class="value" id="statPause">0</div>
       <div class="stat-icon">⏸️</div>
     </div>
+  </section>
+
+  <section class="featured" id="featuredSection" style="display:none">
+    <div class="featured-head">
+      <div>
+        <div class="eyebrow">🔥 Sedang Ramai</div>
+        <h2>Akhir-akhir Ini Sering Ditonton</h2>
+      </div>
+      <span class="featured-count" id="featuredCount">0 judul</span>
+    </div>
+    <div class="featured-grid" id="featuredGrid"></div>
   </section>
 
   <section class="toolbar">
@@ -586,6 +631,12 @@
             <option value="Netflix"></option><option value="Viu"></option>
           </datalist>
         </div>
+        <div class="field full">
+          <label class="check-label">
+            <input type="checkbox" id="sering" />
+            <span>Tampilkan di <b>„Akhir-akhir Ini Sering Ditonton”</b></span>
+          </label>
+        </div>
       </div>
       <div class="modal-foot">
         <button type="button" class="btn btn-ghost" onclick="closeModal('formModal')">Batal</button>
@@ -621,13 +672,13 @@
   // Nilai episode disimpan apa adanya (termasuk [END], "Lanjut S2", "164 Tengah", dll).
   // Status & season berasal dari serial donghuanya, bukan dari progres nonton.
   const seed = [
-    { id: 1, judul: '100.000 Years Of Refining Qi', hari: '', lastEp: '137', nextEp: '138', season: 'Season 1', status: 'Ongoing', via: '' },
+    { id: 1, judul: '100.000 Years Of Refining Qi', hari: '', lastEp: '137', nextEp: '138', season: 'Season 1', status: 'Ongoing', via: '', seringDitonton: true },
     { id: 2, judul: 'Against the Sky Supreme', judulLain: 'Melawan Penguasa Langit', hari: '', lastEp: '212', nextEp: '213', season: 'Season 1', status: 'Ongoing', via: 'WeTV' },
     { id: 3, judul: 'Ancient God Sovereign', hari: '', lastEp: '03', nextEp: '04', season: 'Season 1', status: 'Ongoing', via: '' },
     { id: 4, judul: 'Apotheosis', hari: '', lastEp: '40', nextEp: '41', season: 'Season 1', status: 'Ongoing', via: '' },
-    { id: 5, judul: 'Azure Legacy', hari: '', lastEp: '105', nextEp: '106', season: '', status: 'Ongoing', via: '' },
+    { id: 5, judul: 'Azure Legacy', hari: '', lastEp: '105', nextEp: '106', season: '', status: 'Ongoing', via: '', seringDitonton: true },
     { id: 6, judul: 'Battle Through the Heavens', hari: '', lastEp: '67', nextEp: '67', season: 'Season 5', status: 'Ongoing', via: '' },
-    { id: 7, judul: 'Beyond Time’s Gaze', hari: 'Sabtu', lastEp: '49', nextEp: '50', season: 'Season 1', status: 'Ongoing', via: '' },
+    { id: 7, judul: 'Beyond Time’s Gaze', hari: 'Sabtu', lastEp: '49', nextEp: '50', season: 'Season 1', status: 'Ongoing', via: '', seringDitonton: true },
     { id: 8, judul: 'Everyone in the Sect Except Me is an Undercover Agent', hari: '', lastEp: '14', nextEp: '15', season: 'Season 1', status: 'Ongoing', via: '' },
     { id: 9, judul: 'Five Elements God Of War', hari: '', lastEp: '03', nextEp: '04', season: 'Season 1', status: 'Ongoing', via: '' },
     { id: 10, judul: 'Glorious Revenge of Ye Feng', hari: '', lastEp: '24', nextEp: '25', season: 'Season 1', status: 'Completed', via: '' },
@@ -643,13 +694,13 @@
     { id: 20, judul: 'Peak of True Martial Arts', hari: 'Rabu/Sabtu/Minggu', lastEp: '97', nextEp: '98', season: 'Season 2', status: 'Ongoing', via: '' },
     { id: 21, judul: 'Perfect World', hari: 'Jumat', lastEp: '139', nextEp: '140', season: 'Season 2', status: 'Ongoing', via: '' },
     { id: 22, judul: 'Player Sultan [Wealth and Wonder]', hari: '', lastEp: '1', nextEp: '2', season: 'Season 1', status: 'Ongoing', via: '' },
-    { id: 23, judul: 'Renegade Immortal', hari: 'Senin', lastEp: '168', nextEp: '169', season: 'Season 1', status: 'Ongoing', via: 'WeTV' },
+    { id: 23, judul: 'Renegade Immortal', hari: 'Senin', lastEp: '168', nextEp: '169', season: 'Season 1', status: 'Ongoing', via: 'WeTV', seringDitonton: true },
     { id: 24, judul: 'Return of The Immortal Emperor', hari: '', lastEp: '16', nextEp: '17', season: 'Season 1', status: 'Hiatus', via: '' },
     { id: 25, judul: 'Soul Land', hari: '', lastEp: '265', nextEp: '~', season: 'Season 2', status: 'Completed', via: '' },
     { id: 26, judul: 'Stellar Transformation', judulLain: 'Transformasi Bintang', hari: '', lastEp: '13', nextEp: '14', season: 'Season 5', status: 'Ongoing', via: 'WeTV' },
     { id: 27, judul: 'Supreme God Emperor', judulLain: 'Kaisar Dewa Tertinggi', hari: '', lastEp: '626', nextEp: '627', season: '', status: 'Ongoing', via: 'WeTV' },
     { id: 28, judul: 'Swallowed Star', hari: 'Selasa', lastEp: '164', nextEp: '164 Tengah', season: 'Season 3', status: 'Ongoing', via: '' },
-    { id: 29, judul: 'Tales of Herding Gods', hari: 'Minggu', lastEp: '110', nextEp: '111', season: 'Season 1', status: 'Ongoing', via: 'Anichin' },
+    { id: 29, judul: 'Tales of Herding Gods', hari: 'Minggu', lastEp: '110', nextEp: '111', season: 'Season 1', status: 'Ongoing', via: 'Anichin', seringDitonton: true },
     { id: 30, judul: 'The Adventure\'s of Yang Chen', hari: '', lastEp: '38', nextEp: '39', season: 'Season 1', status: 'Ongoing', via: '' },
     { id: 31, judul: 'The Emperor of Myriad Realms', hari: '', lastEp: '37', nextEp: '38', season: '', status: 'Completed', via: '' },
     { id: 32, judul: 'The Eternal Strife', hari: '', lastEp: '2', nextEp: '3', season: 'Season 1', status: 'Ongoing', via: '' },
@@ -786,6 +837,12 @@
     return 'var(--accent-2)';
   }
 
+  function focusJudul(judul) {
+    $('searchInput').value = judul;
+    render();
+    document.querySelector('.panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   function render() {
     syncDayFilter();
     const q = $('searchInput').value.trim().toLowerCase();
@@ -804,6 +861,28 @@
     $('statPause').textContent = data.filter(d => d.status === 'Hiatus' || d.status === 'Libur').length;
     $('countInfo').textContent = filtered.length + ' dari ' + data.length + ' data';
     $('heroCount').textContent = '✦ ' + data.length + ' judul terlacak';
+
+    const featured = data.filter(d => d.seringDitonton);
+    $('featuredSection').style.display = featured.length ? 'block' : 'none';
+    $('featuredCount').textContent = featured.length + ' judul';
+    $('featuredGrid').innerHTML = featured.map((d, i) => `
+      <div class="featured-card" onclick="focusJudul(decodeURIComponent('${encodeURIComponent(d.judul)}'))" title="Lihat ${esc(d.judul)}">
+        <div class="featured-rank">${String(i + 1).padStart(2, '0')}</div>
+        <div class="featured-title">
+          <span class="title-avatar" style="--hue:${hueOf(d.judul)}">${esc(String(d.judul).charAt(0).toUpperCase())}</span>
+          <div style="min-width:0">
+            <div class="title-cell">${esc(d.judul)}</div>
+            ${d.judulLain ? `<span class="alt-chip" style="margin-top:5px"><span class="alt-chip-label">⇄ ALT</span>${esc(d.judulLain)}</span>` : ''}
+          </div>
+        </div>
+        <div class="featured-info">
+          <span class="ep-pill ${/END/i.test(String(d.lastEp ?? '')) ? 'end' : ''}">${esc(d.lastEp ?? '-')}</span>
+          <span style="color:var(--muted);font-size:11px">→</span>
+          <span class="ep-pill ${/END/i.test(String(d.nextEp ?? '')) ? 'end' : ''}">${esc(d.nextEp ?? '-')}</span>
+          <span class="badge ${esc(d.status)}"><span class="bdot"></span>${esc(d.status)}</span>
+        </div>
+        <div class="featured-hint">Klik untuk lihat di daftar ↗</div>
+      </div>`).join('');
 
     const body = $('tableBody');
     body.innerHTML = filtered.map(d => `
@@ -885,11 +964,13 @@
       $('season').value = d.season || '';
       $('status').value = d.status;
       $('via').value = d.via || '';
+      $('sering').checked = !!d.seringDitonton;
     } else {
       $('donghuaForm').reset();
       $('editId').value = '';
       $('status').value = 'Ongoing';
       $('nextEp').value = '';
+      $('sering').checked = false;
     }
     openModal('formModal');
     setTimeout(() => $('judul').focus(), 50);
@@ -915,7 +996,8 @@
       nextEp: $('nextEp').value.trim(),
       season: $('season').value.trim(),
       status: $('status').value,
-      via: $('via').value.trim()
+      via: $('via').value.trim(),
+      seringDitonton: $('sering').checked
     };
     const id = $('editId').value;
     if (id) {

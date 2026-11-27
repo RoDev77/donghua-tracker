@@ -47,6 +47,7 @@ module.exports = async function handler(req, res) {
           season: String(item.season || ''),
           status: String(item.status || 'Ongoing'),
           via: String(item.via || ''),
+          seringDitonton: item.seringDitonton === true,
           updatedAt: FieldValue.serverTimestamp()
         });
       });

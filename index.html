@@ -451,17 +451,45 @@
   .random-btn:hover { background: rgba(251,191,36,.2); transform: translateY(-1px); }
 
   /* Login gate */
-  .login-gate { display: grid; place-items: center; min-height: 58vh; animation: rise .5s ease both; }
+  body.locked .wrap { max-width: 940px; padding-top: 7vh; }
+  body.locked header { justify-content: center; text-align: center; margin-bottom: 38px; }
+  body.locked footer { display: none; }
+  .login-gate { display: grid; place-items: center; min-height: 64vh; animation: rise .5s ease both; }
   .gate-card {
-    width: min(440px, 100%); text-align: center; padding: 36px 30px;
+    width: min(520px, 100%); text-align: center; padding: 42px 36px 34px; position: relative; overflow: hidden;
     background: linear-gradient(160deg, var(--panel), var(--bg-soft));
-    border: 1px solid var(--border); border-radius: 22px; box-shadow: var(--shadow);
+    border: 1px solid var(--border); border-radius: 26px; box-shadow: 0 30px 80px rgba(0,0,0,.4);
   }
-  .gate-logo { width: 72px; height: 72px; margin: 0 auto 16px; border-radius: 20px; overflow: hidden; border: 1px solid rgba(60,224,196,.35); box-shadow: 0 10px 28px rgba(60,224,196,.2); }
+  .gate-card::before {
+    content: ''; position: absolute; inset: 0 0 auto 0; height: 4px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2), var(--hiatus));
+  }
+  .gate-card::after {
+    content: ''; position: absolute; width: 220px; height: 220px; border-radius: 50%; right: -90px; top: -90px;
+    background: radial-gradient(circle, rgba(139,123,255,.22), transparent 70%); pointer-events: none;
+  }
+  .gate-logo {
+    width: 88px; height: 88px; margin: 0 auto 18px; border-radius: 24px; overflow: hidden;
+    border: 1px solid rgba(60,224,196,.4); box-shadow: 0 14px 36px rgba(60,224,196,.25);
+    animation: float 5s ease-in-out infinite;
+  }
   .gate-logo img { width: 100%; height: 100%; object-fit: cover; }
-  .gate-card h2 { font-size: 20px; margin: 6px 0 8px; letter-spacing: -.4px; }
-  .gate-card p { color: var(--muted); font-size: 13px; margin: 0 0 20px; }
-  .gate-note { display: block; margin-top: 12px; font-size: 11.5px; color: var(--danger); min-height: 14px; }
+  .gate-card h2 { font-size: 24px; line-height: 1.3; margin: 8px 0 10px; letter-spacing: -.6px; }
+  .gate-card p { color: var(--muted); font-size: 13px; line-height: 1.7; margin: 0 auto 24px; max-width: 380px; }
+  .gate-btn {
+    width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 15px 20px; border-radius: 14px; font-size: 14px; font-weight: 800;
+    color: #fff; background: linear-gradient(135deg, #5865f2, #7c6cff);
+    box-shadow: 0 12px 28px rgba(88,101,242,.35); transition: transform .15s, box-shadow .15s;
+  }
+  .gate-btn:hover { transform: translateY(-2px); box-shadow: 0 16px 34px rgba(88,101,242,.45); }
+  .gate-discord { font-size: 19px; line-height: 1; }
+  .gate-features { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 22px; }
+  .gate-features span {
+    font-size: 10.5px; font-weight: 700; color: var(--muted);
+    background: var(--panel-2); border: 1px solid var(--border); padding: 5px 10px; border-radius: 99px;
+  }
+  .gate-note { display: block; margin-top: 14px; font-size: 11.5px; color: var(--danger); min-height: 14px; }
 
   /* Featured / sering ditonton */
   .featured { margin-bottom: 22px; animation: rise .55s ease both; }
@@ -703,9 +731,14 @@
     <div class="gate-card">
       <div class="gate-logo"><img src="assets/donghua-world.jpg" alt="Donghua History" /></div>
       <div class="eyebrow">✦ Private Journal</div>
-      <h2>Jurnal menontonmu, hanya untukmu.</h2>
-      <p>Masuk dengan Discord untuk melihat dan mengedit riwayat donghua kamu.</p>
-      <button class="btn btn-primary" onclick="loginDiscord()">🔐 Login dengan Discord</button>
+      <h2>Selamat datang kembali di<br />jurnal donghua kamu.</h2>
+      <p>Semua riwayat menonton tersimpan di akun Discord kamu. Masuk untuk melihat, mengedit, dan menandai episode.</p>
+      <button class="gate-btn" onclick="loginDiscord()">
+        <span class="gate-discord">◈</span> Login dengan Discord
+      </button>
+      <div class="gate-features">
+        <span>🔒 Data privat</span><span>☁ Tersimpan di Firestore</span><span>🎨 Cover tiap judul</span>
+      </div>
       <span class="gate-note" id="gateNote"></span>
     </div>
   </section>
@@ -1034,6 +1067,7 @@
 
   function applyGate() {
     const locked = useApi() && !discordUser;
+    document.body.classList.toggle('locked', locked);
     $('appBody').style.display = locked ? 'none' : 'block';
     $('loginGate').style.display = locked ? 'grid' : 'none';
     $('headerActions').style.display = locked ? 'none' : 'flex';

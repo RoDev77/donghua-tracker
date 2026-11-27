@@ -1,4 +1,4 @@
-# Donghua Tracker
+# Donghua History
 
 Pencatat riwayat menonton Donghua. Saat di-deploy di Vercel, data disimpan di **Cloud Firestore** melalui serverless function. Saat file `index.html` dibuka langsung dari komputer (`file://`), data tetap memakai `localStorage` sebagai fallback.
 

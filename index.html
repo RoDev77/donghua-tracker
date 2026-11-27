@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Donghua Tracker — Riwayat Menonton</title>
+<title>Donghua History — Riwayat Menonton</title>
 <link rel="icon" type="image/jpeg" href="assets/donghua-world.jpg" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -466,7 +466,7 @@
       <div class="logo"><img src="assets/donghua-world.jpg" alt="Donghua World" /></div>
       <div>
         <div class="eyebrow">✦ Watch History</div>
-        <h1>Donghua Tracker</h1>
+        <h1>Donghua History</h1>
         <p>Catat riwayat menonton donghua favoritmu dalam satu tempat.</p>
         <div class="hero-chip" id="heroCount">✦ 0 judul terlacak</div>
       </div>
@@ -571,7 +571,7 @@
   <footer>
     <span class="footer-chip">✦ Local Storage</span>
     <span>Data tersimpan otomatis di browser ini.</span>
-    <span>🐉 Donghua World</span>
+    <span>🐉 Donghua History</span>
   </footer>
   <button id="toTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Kembali ke atas">↑</button>
 </div>
@@ -1096,7 +1096,7 @@
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'donghua-tracker.json';
+    a.download = 'donghua-history.json';
     a.click();
     URL.revokeObjectURL(a.href);
     toast('⬇ Data diekspor');

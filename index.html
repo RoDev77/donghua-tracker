@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Donghua Tracker — Riwayat Menonton</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%233ce0c4'/%3E%3Cstop offset='1' stop-color='%238b7bff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Ctext x='32' y='42' font-size='34' text-anchor='middle'%3E🍜%3C/text%3E%3C/svg%3E" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -340,12 +341,68 @@
     border: 1px solid rgba(60,224,196,.22); padding: 3px 9px; border-radius: 99px;
   }
 
+  /* Hero chip */
+  .hero-chip {
+    display: inline-flex; align-items: center; gap: 6px; margin-top: 10px;
+    font-size: 11px; font-weight: 800; letter-spacing: .2px; color: var(--accent-2);
+    background: rgba(139,123,255,.11); border: 1px solid rgba(139,123,255,.25);
+    padding: 5px 11px; border-radius: 99px;
+  }
+  [data-theme="light"] .hero-chip { color: #6d4aff; }
+
+  /* View toggle */
+  .view-toggle { display: flex; gap: 3px; background: var(--bg); border: 1px solid var(--border); padding: 3px; border-radius: 11px; }
+  .view-toggle button {
+    background: transparent; color: var(--muted); font-size: 12px; font-weight: 800;
+    padding: 7px 12px; border-radius: 8px; transition: all .15s ease;
+  }
+  .view-toggle button:hover { color: var(--text); }
+  .view-toggle button.active {
+    background: linear-gradient(135deg, rgba(60,224,196,.2), rgba(139,123,255,.2));
+    color: var(--text); box-shadow: inset 0 0 0 1px rgba(60,224,196,.25);
+  }
+
+  /* Card grid */
+  .card-grid { display: none; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 14px; padding: 16px; }
+  .panel.cards .table-scroll { display: none !important; }
+  .panel.cards .card-grid { display: grid; }
+  .donghua-card {
+    background: linear-gradient(160deg, var(--panel-2), var(--panel));
+    border: 1px solid var(--border); border-radius: 16px; padding: 16px;
+    position: relative; overflow: hidden; transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+    animation: rise .35s ease both;
+  }
+  .donghua-card::before { content: ''; position: absolute; inset: 0 0 auto 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--accent-2)); opacity: .75; }
+  .donghua-card:hover { transform: translateY(-4px); border-color: var(--accent); box-shadow: 0 14px 34px rgba(0,0,0,.22); }
+  .card-top { display: flex; align-items: flex-start; gap: 11px; margin-bottom: 14px; }
+  .card-top .title-cell { flex: 1; line-height: 1.35; }
+  .card-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 9px 12px; margin-bottom: 14px; }
+  .card-meta .item { display: flex; flex-direction: column; gap: 4px; }
+  .card-meta .k { font-size: 9.5px; text-transform: uppercase; letter-spacing: .7px; color: var(--muted); font-weight: 800; }
+  .card-meta .v { font-size: 12.5px; font-weight: 700; }
+  .card-foot { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--border); gap: 10px; flex-wrap: wrap; }
+
+  tbody tr { animation: rowIn .32s ease both; }
+  @keyframes rowIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+
+  /* Scroll to top */
+  #toTop {
+    position: fixed; right: 22px; bottom: 22px; width: 44px; height: 44px; border-radius: 14px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #06201c;
+    font-size: 18px; font-weight: 800; display: grid; place-items: center;
+    box-shadow: 0 12px 30px rgba(60,224,196,.3); z-index: 40;
+    opacity: 0; pointer-events: none; transform: translateY(12px); transition: all .25s ease;
+  }
+  #toTop.show { opacity: 1; pointer-events: auto; transform: none; }
+
   @media (max-width: 760px) {
     .stats { grid-template-columns: repeat(2, 1fr); }
     .form-grid { grid-template-columns: 1fr; }
     .select-wrap { flex: 1 1 140px; }
     .count-info { margin-left: 0; }
     h1 { font-size: 22px; }
+    .view-toggle { order: 3; }
+    .card-grid { grid-template-columns: 1fr; padding: 12px; }
   }
 </style>
 </head>
@@ -358,6 +415,7 @@
         <div class="eyebrow">✦ Watch History</div>
         <h1>Donghua Tracker</h1>
         <p>Catat riwayat menonton donghua favoritmu dalam satu tempat.</p>
+        <div class="hero-chip" id="heroCount">✦ 0 judul terlacak</div>
       </div>
     </div>
     <div class="header-actions">
@@ -413,10 +471,14 @@
         <option>Kamis</option><option>Jumat</option><option>Sabtu</option><option>Minggu</option>
       </select>
     </div>
+    <div class="view-toggle">
+      <button id="viewTable" class="active" onclick="setView('table')" title="Tampilan tabel">▤ Tabel</button>
+      <button id="viewCard" onclick="setView('card')" title="Tampilan kartu">▦ Kartu</button>
+    </div>
     <div class="count-info" id="countInfo">0 data</div>
   </section>
 
-  <section class="panel">
+  <section class="panel" id="dataPanel">
     <div class="table-scroll">
       <table>
         <thead>
@@ -434,6 +496,7 @@
         <tbody id="tableBody"></tbody>
       </table>
     </div>
+    <div class="card-grid" id="cardGrid"></div>
     <div class="empty" id="emptyState" style="display:none">
       <div class="big">📺</div>
       <h3>Belum ada data</h3>
@@ -446,6 +509,7 @@
     <span>Data tersimpan otomatis di browser ini.</span>
     <span>🍜 Donghua Tracker</span>
   </footer>
+  <button id="toTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Kembali ke atas">↑</button>
 </div>
 
 <!-- Form Modal -->
@@ -588,6 +652,8 @@
 
   const $ = id => document.getElementById(id);
   const THEME_KEY = 'donghua-tracker-theme';
+  const VIEW_KEY = 'donghua-tracker-view';
+  let viewMode = localStorage.getItem(VIEW_KEY) || 'table';
 
   function applyTheme(theme) {
     document.documentElement.dataset.theme = theme;
@@ -598,6 +664,18 @@
   function toggleTheme() {
     applyTheme(document.documentElement.dataset.theme === 'light' ? 'dark' : 'light');
   }
+
+  function setView(mode) {
+    viewMode = mode;
+    localStorage.setItem(VIEW_KEY, mode);
+    $('viewTable').classList.toggle('active', mode === 'table');
+    $('viewCard').classList.toggle('active', mode === 'card');
+    render();
+  }
+
+  window.addEventListener('scroll', () => {
+    $('toTop').classList.toggle('show', window.scrollY > 320);
+  }, { passive: true });
 
   function load() {
     try {
@@ -673,6 +751,7 @@
     $('statCompleted').textContent = data.filter(d => d.status === 'Completed').length;
     $('statPause').textContent = data.filter(d => d.status === 'Hiatus' || d.status === 'Libur').length;
     $('countInfo').textContent = filtered.length + ' dari ' + data.length + ' data';
+    $('heroCount').textContent = '✦ ' + data.length + ' judul terlacak';
 
     const body = $('tableBody');
     body.innerHTML = filtered.map(d => `
@@ -699,8 +778,37 @@
         </td>
       </tr>`).join('');
 
+    $('cardGrid').innerHTML = filtered.map(d => `
+      <div class="donghua-card">
+        <div class="card-top">
+          <span class="title-avatar" style="--hue:${hueOf(d.judul)}">${esc(String(d.judul).charAt(0).toUpperCase())}</span>
+          <div style="flex:1;min-width:0">
+            <div class="title-cell">${esc(d.judul)}</div>
+            <div class="sub">#${d.id}</div>
+          </div>
+          <span class="badge ${esc(d.status)}"><span class="bdot"></span>${esc(d.status)}</span>
+        </div>
+        <div class="card-meta">
+          <div class="item"><span class="k">Hari Update</span><span class="v">${esc(d.hari) || '-'}</span></div>
+          <div class="item"><span class="k">Season</span><span class="v">${esc(d.season) || '-'}</span></div>
+          <div class="item"><span class="k">Ep. Terakhir</span><span class="v"><span class="ep-pill ${/END/i.test(String(d.lastEp ?? '')) ? 'end' : ''}">${esc(d.lastEp ?? '-')}</span></span></div>
+          <div class="item"><span class="k">Lanjut Ep.</span><span class="v"><span class="ep-pill ${/END/i.test(String(d.nextEp ?? '')) ? 'end' : ''}">${esc(d.nextEp ?? '-')}</span></span></div>
+          <div class="item"><span class="k">Nonton Via</span><span class="v"><span class="via-badge" style="color:${viaColor(d.via)}">▶ ${esc(d.via) || '-'}</span></span></div>
+        </div>
+        <div class="card-foot">
+          <span class="sub">Diperbarui otomatis</span>
+          <div class="row-actions">
+            <button class="icon-btn watch" title="Tandai sudah nonton" onclick="watchNext(${d.id})">✅</button>
+            <button class="icon-btn edit" title="Edit" onclick="openForm(${d.id})">✏️</button>
+            <button class="icon-btn danger" title="Hapus" onclick="askDelete(${d.id})">🗑</button>
+          </div>
+        </div>
+      </div>`).join('');
+
+    $('dataPanel').classList.toggle('cards', viewMode === 'card');
     $('emptyState').style.display = filtered.length ? 'none' : 'block';
     document.querySelector('.table-scroll').style.display = filtered.length ? 'block' : 'none';
+    $('cardGrid').style.display = filtered.length ? '' : 'none';
   }
 
   function openForm(id = null) {
@@ -837,7 +945,7 @@
 
   applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
   load();
-  render();
+  setView(viewMode);
 </script>
 </body>
 </html>

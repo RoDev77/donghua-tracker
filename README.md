@@ -24,4 +24,6 @@ Status dan season merujuk ke serial donghuanya; tanda selesai menonton dituliska
 - Ekspor/impor JSON
 - Tombol cepat untuk menandai episode selesai ditonton
 - Toggle tema gelap/terang (tersimpan di browser)
+- Pilihan tampilan Tabel / Kartu (tersimpan di browser)
 - Tampilan kartu responsif di layar kecil
+- Tombol kembali ke atas dan favicon khusus

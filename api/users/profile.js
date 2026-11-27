@@ -1,5 +1,6 @@
 const { initializeApp, getApps, cert } = require('firebase-admin/app');
 const { getFirestore } = require('firebase-admin/firestore');
+const { coverFor } = require('../../lib/covers');
 
 if (!getApps().length) {
   const sa = process.env.FIREBASE_SERVICE_ACCOUNT;
@@ -27,8 +28,7 @@ module.exports = async function handler(req, res) {
     const snap = await db.collection('users').doc(uid).collection('donghua').get();
     const donghua = snap.docs.map(doc => {
       const data = doc.data();
-      const cover = String(data.cover || '').replace(/against-the-gods\.jpe?g$/i, 'assets/covers/against-the-gods.webp');
-      return { id: doc.id, ...data, cover };
+      return { id: doc.id, ...data, cover: coverFor(data.judul) };
     });
     donghua.sort((a, b) => Number(a.id) - Number(b.id));
 

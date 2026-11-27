@@ -1,6 +1,7 @@
 const { initializeApp, getApps, cert } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 const { parseCookies, verify } = require('../lib/auth');
+const { coverFor } = require('../lib/covers');
 
 if (!getApps().length) {
   const sa = process.env.FIREBASE_SERVICE_ACCOUNT;
@@ -27,8 +28,7 @@ module.exports = async function handler(req, res) {
       const snap = await col.get();
       const items = snap.docs.map(doc => {
         const data = doc.data();
-        const cover = String(data.cover || '').replace(/against-the-gods\.jpe?g$/i, 'assets/covers/against-the-gods.webp');
-        return { id: doc.id, ...data, cover };
+        return { id: doc.id, ...data, cover: coverFor(data.judul) };
       });
       items.sort((a, b) => Number(a.id) - Number(b.id));
       return res.status(200).json(items);
@@ -43,7 +43,7 @@ module.exports = async function handler(req, res) {
         batch.set(col.doc(String(item.id)), {
           judul: String(item.judul || ''),
           judulLain: String(item.judulLain || ''),
-          cover: String(item.cover || ''),
+          cover: coverFor(item.judul),
           hari: String(item.hari || ''),
           lastEp: String(item.lastEp ?? ''),
           nextEp: String(item.nextEp ?? ''),

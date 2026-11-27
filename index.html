@@ -710,7 +710,7 @@
     </div>
   </section>
 
-  <details class="activity-log">
+  <details class="activity-log" id="activityLog">
     <summary>🕘 Aktivitas terakhir <span id="activityCount"></span></summary>
     <div id="activityList" class="activity-list"></div>
     <button class="btn btn-ghost btn-sm" onclick="clearActivity()">Bersihkan log</button>
@@ -1037,6 +1037,7 @@
     $('appBody').style.display = locked ? 'none' : 'block';
     $('loginGate').style.display = locked ? 'grid' : 'none';
     $('headerActions').style.display = locked ? 'none' : 'flex';
+    $('activityLog').style.display = locked ? 'none' : 'block';
     const btn = $('discordBtn');
     btn.style.display = useApi() ? 'inline-flex' : 'none';
     btn.innerHTML = discordUser

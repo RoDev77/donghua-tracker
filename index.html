@@ -222,8 +222,22 @@
     border: 1px solid hsl(var(--hue) 70% 60% / .28);
   }
   .sub { color: var(--muted); font-size: 11px; margin-top: 3px; }
-  .alt-title { color: var(--accent-2); font-weight: 600; }
-  [data-theme="light"] .alt-title { color: #6d4aff; }
+  .title-meta { display: flex; align-items: center; gap: 8px; margin-top: 4px; flex-wrap: wrap; }
+  .sub-id { color: var(--muted); font-size: 10px; font-weight: 700; }
+  .alt-chip {
+    display: inline-flex; align-items: center; gap: 5px; max-width: 100%;
+    padding: 2px 8px 2px 3px; border-radius: 99px;
+    font-size: 10.5px; font-weight: 700; color: var(--accent-2);
+    background: rgba(139,123,255,.10); border: 1px solid rgba(139,123,255,.24);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .alt-chip-label {
+    flex: none; font-size: 8.5px; font-weight: 800; letter-spacing: .4px;
+    padding: 2px 5px; border-radius: 99px;
+    background: rgba(139,123,255,.24); color: #ded8ff;
+  }
+  [data-theme="light"] .alt-chip { color: #6d4aff; }
+  [data-theme="light"] .alt-chip-label { color: #fff; }
   .num { font-variant-numeric: tabular-nums; font-weight: 800; }
   .next-num { color: var(--accent); }
   .ep-pill {
@@ -799,8 +813,10 @@
             <span class="title-avatar" style="--hue:${hueOf(d.judul)}">${esc(String(d.judul).charAt(0).toUpperCase())}</span>
             <span>${esc(d.judul)}</span>
           </div>
-          <div class="sub">#${d.id}</div>
-          ${d.judulLain ? `<div class="sub alt-title">↳ ${esc(d.judulLain)}</div>` : ''}
+          <div class="title-meta">
+            <span class="sub-id">#${d.id}</span>
+            ${d.judulLain ? `<span class="alt-chip" title="Judul lain: ${esc(d.judulLain)}"><span class="alt-chip-label">⇄ ALT</span>${esc(d.judulLain)}</span>` : ''}
+          </div>
         </td>
         <td data-label="Hari Update"><span class="day-badge ${/\//.test(d.hari || '') ? 'multi' : ''}">🗓 ${esc(d.hari) || '-'}</span></td>
         <td class="num" data-label="Ep. Terakhir"><span class="ep-pill ${/END/i.test(String(d.lastEp ?? '')) ? 'end' : ''}">${esc(d.lastEp ?? '-')}</span></td>
@@ -823,8 +839,10 @@
           <span class="title-avatar" style="--hue:${hueOf(d.judul)}">${esc(String(d.judul).charAt(0).toUpperCase())}</span>
           <div style="flex:1;min-width:0">
             <div class="title-cell">${esc(d.judul)}</div>
-            <div class="sub">#${d.id}</div>
-            ${d.judulLain ? `<div class="sub alt-title">↳ ${esc(d.judulLain)}</div>` : ''}
+            <div class="title-meta">
+              <span class="sub-id">#${d.id}</span>
+              ${d.judulLain ? `<span class="alt-chip" title="Judul lain: ${esc(d.judulLain)}"><span class="alt-chip-label">⇄ ALT</span>${esc(d.judulLain)}</span>` : ''}
+            </div>
           </div>
           <span class="badge ${esc(d.status)}"><span class="bdot"></span>${esc(d.status)}</span>
         </div>

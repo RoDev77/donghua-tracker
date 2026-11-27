@@ -1,28 +1,30 @@
 const { initializeApp, getApps, cert } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
+const { parseCookies, verify } = require('../lib/auth');
 
 if (!getApps().length) {
   const sa = process.env.FIREBASE_SERVICE_ACCOUNT;
-  if (sa) {
-    initializeApp({ credential: cert(JSON.parse(sa)) });
-  } else {
-    initializeApp();
-  }
+  if (sa) initializeApp({ credential: cert(JSON.parse(sa)) });
+  else initializeApp();
 }
 
 const db = getFirestore();
-const COLLECTION = 'donghua';
+
+function collectionFor(req) {
+  const cookies = parseCookies(req.headers.cookie);
+  const session = verify(cookies.dh_session);
+  if (!session || !session.id) return null;
+  return db.collection('users').doc(String(session.id)).collection('donghua');
+}
 
 module.exports = async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') return res.status(204).end();
+  res.setHeader('Cache-Control', 'no-store');
+  const col = collectionFor(req);
+  if (!col) return res.status(401).json({ error: 'Discord login diperlukan' });
 
   try {
     if (req.method === 'GET') {
-      const snap = await db.collection(COLLECTION).get();
+      const snap = await col.get();
       const items = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       items.sort((a, b) => Number(a.id) - Number(b.id));
       return res.status(200).json(items);
@@ -30,15 +32,11 @@ module.exports = async function handler(req, res) {
 
     if (req.method === 'PUT') {
       const items = Array.isArray(req.body) ? req.body : [];
-      const col = db.collection(COLLECTION);
       const batch = db.batch();
-
       const existing = await col.get();
       existing.forEach(doc => batch.delete(doc.ref));
-
       items.forEach(item => {
-        const id = String(item.id);
-        batch.set(col.doc(id), {
+        batch.set(col.doc(String(item.id)), {
           judul: String(item.judul || ''),
           judulLain: String(item.judulLain || ''),
           hari: String(item.hari || ''),
@@ -51,7 +49,6 @@ module.exports = async function handler(req, res) {
           updatedAt: FieldValue.serverTimestamp()
         });
       });
-
       await batch.commit();
       return res.status(200).json({ ok: true, count: items.length });
     }

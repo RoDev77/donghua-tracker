@@ -14,7 +14,8 @@ if (!getApps().length) initializeApp();
 const db = getFirestore();
 
 (async () => {
-  const col = db.collection('donghua');
+  const ownerId = process.env.DISCORD_OWNER_ID || '603891834858635274';
+  const col = db.collection('users').doc(ownerId).collection('donghua');
   const batch = db.batch();
   const existing = await col.get();
   existing.forEach(doc => batch.delete(doc.ref));
@@ -33,7 +34,7 @@ const db = getFirestore();
     });
   });
   await batch.commit();
-  console.log('Seeded ' + seed.length + ' dokumen ke Firestore.');
+  console.log('Seeded ' + seed.length + ' dokumen ke users/' + ownerId + '/donghua');
 })().catch(err => {
   console.error('Gagal seed:', err.message || err);
   process.exit(1);

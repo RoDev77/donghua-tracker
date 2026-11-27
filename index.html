@@ -362,6 +362,19 @@
     border: 1px solid rgba(60,224,196,.22); padding: 3px 9px; border-radius: 99px;
   }
 
+  /* Login gate */
+  .login-gate { display: grid; place-items: center; min-height: 58vh; animation: rise .5s ease both; }
+  .gate-card {
+    width: min(440px, 100%); text-align: center; padding: 36px 30px;
+    background: linear-gradient(160deg, var(--panel), var(--bg-soft));
+    border: 1px solid var(--border); border-radius: 22px; box-shadow: var(--shadow);
+  }
+  .gate-logo { width: 72px; height: 72px; margin: 0 auto 16px; border-radius: 20px; overflow: hidden; border: 1px solid rgba(60,224,196,.35); box-shadow: 0 10px 28px rgba(60,224,196,.2); }
+  .gate-logo img { width: 100%; height: 100%; object-fit: cover; }
+  .gate-card h2 { font-size: 20px; margin: 6px 0 8px; letter-spacing: -.4px; }
+  .gate-card p { color: var(--muted); font-size: 13px; margin: 0 0 20px; }
+  .gate-note { display: block; margin-top: 12px; font-size: 11.5px; color: var(--danger); min-height: 14px; }
+
   /* Featured / sering ditonton */
   .featured { margin-bottom: 22px; animation: rise .55s ease both; }
   .featured-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
@@ -472,6 +485,7 @@
       </div>
     </div>
     <div class="header-actions">
+      <button class="btn btn-ghost" id="discordBtn" onclick="discordAction()" style="display:none">🔐 Login Discord</button>
       <button class="btn btn-ghost" id="themeBtn" onclick="toggleTheme()" title="Ganti tema">🌙</button>
       <button class="btn btn-ghost" onclick="exportData()">⬇ Ekspor</button>
       <button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">⬆ Impor</button>
@@ -480,6 +494,7 @@
     </div>
   </header>
 
+  <div id="appBody">
   <section class="stats">
     <div class="stat" style="--c: var(--accent)">
       <div class="label"><span class="dot"></span>Total Donghua</div>
@@ -567,10 +582,22 @@
       <p>Tambah donghua pertama untuk mulai mencatat riwayat menontonmu.</p>
     </div>
   </section>
+  </div>
+
+  <section class="login-gate" id="loginGate" style="display:none">
+    <div class="gate-card">
+      <div class="gate-logo"><img src="assets/donghua-world.jpg" alt="Donghua History" /></div>
+      <div class="eyebrow">✦ Private Journal</div>
+      <h2>Jurnal menontonmu, hanya untukmu.</h2>
+      <p>Masuk dengan Discord untuk melihat dan mengedit riwayat donghua kamu.</p>
+      <button class="btn btn-primary" onclick="loginDiscord()">🔐 Login dengan Discord</button>
+      <span class="gate-note" id="gateNote"></span>
+    </div>
+  </section>
 
   <footer>
-    <span class="footer-chip">✦ Local Storage</span>
-    <span>Data tersimpan otomatis di browser ini.</span>
+    <span class="footer-chip" id="storageChip">✦ Firestore</span>
+    <span id="storageText">Data tersimpan di akun Discordmu.</span>
     <span>🐉 Donghua History</span>
   </footer>
   <button id="toTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Kembali ke atas">↑</button>
@@ -768,6 +795,64 @@
 
   const API_URL = '/api/donghua';
   const useApi = () => location.protocol !== 'file:';
+  const DISCORD_CLIENT_ID = '1575860393132171344';
+  const DISCORD_REDIRECT_URI = 'https://dh.rstudiolab.tech/callback';
+  let discordUser = null;
+
+  function loginDiscord() {
+    const state = crypto.randomUUID ? crypto.randomUUID() : String(Date.now());
+    document.cookie = 'discord_oauth_state=' + encodeURIComponent(state) + '; path=/; SameSite=Lax; Max-Age=600';
+    const params = new URLSearchParams({
+      client_id: DISCORD_CLIENT_ID,
+      redirect_uri: DISCORD_REDIRECT_URI,
+      response_type: 'code',
+      scope: 'identify',
+      state
+    });
+    location.href = 'https://discord.com/oauth2/authorize?' + params.toString();
+  }
+
+  async function logoutDiscord() {
+    await fetch('/api/logout', { method: 'POST' }).catch(() => {});
+    discordUser = null;
+    applyGate();
+  }
+
+  function discordAction() {
+    if (discordUser) logoutDiscord();
+    else loginDiscord();
+  }
+
+  function applyGate() {
+    const locked = useApi() && !discordUser;
+    $('appBody').style.display = locked ? 'none' : 'block';
+    $('loginGate').style.display = locked ? 'grid' : 'none';
+    const btn = $('discordBtn');
+    btn.style.display = useApi() ? 'inline-flex' : 'none';
+    btn.textContent = discordUser ? '👤 ' + discordUser.username : '🔐 Login Discord';
+    $('storageChip').textContent = useApi() ? '✦ Firestore' : '✦ Local Storage';
+    $('storageText').textContent = useApi()
+      ? 'Data tersimpan di akun Discordmu.'
+      : 'Data tersimpan otomatis di browser ini.';
+  }
+
+  async function checkDiscord() {
+    if (!useApi()) {
+      discordUser = { id: 'local', username: 'Local' };
+      applyGate();
+      return;
+    }
+    try {
+      const res = await fetch('/api/me', { cache: 'no-store' });
+      const json = await res.json();
+      discordUser = json.user || null;
+    } catch (e) {
+      discordUser = null;
+    }
+    applyGate();
+    const err = new URLSearchParams(location.search).get('login_error');
+    if (err) $('gateNote').textContent = 'Gagal login: ' + err.replace(/_/g, ' ');
+  }
 
   async function load() {
     if (!useApi()) {
@@ -1139,7 +1224,8 @@
 
   applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
   (async () => {
-    await load();
+    await checkDiscord();
+    if (!(useApi() && !discordUser)) await load();
     setView(viewMode);
   })();
 </script>

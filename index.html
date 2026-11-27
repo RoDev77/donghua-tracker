@@ -134,6 +134,7 @@
   }
   .icon-btn:hover { background: var(--panel-hover); color: var(--text); transform: translateY(-1px); }
   .icon-btn.watch:hover { color: var(--ongoing); background: rgba(52,211,153,.13); }
+  .icon-btn.end:hover, .icon-btn.end.active { color: var(--hiatus); background: rgba(251,191,36,.14); }
   .icon-btn.edit:hover { color: var(--completed); background: rgba(96,165,250,.13); }
   .icon-btn.danger:hover { color: var(--danger); background: rgba(251,113,133,.13); }
 
@@ -829,6 +830,14 @@
     return h;
   }
 
+  function isEnd(d) {
+    return /END/i.test(String(d?.lastEp ?? '') + ' ' + String(d?.nextEp ?? ''));
+  }
+
+  function stripEnd(v) {
+    return String(v ?? '').replace(/\s*\[END\]/gi, '').replace(/\bEND\b/gi, '').trim();
+  }
+
   function viaColor(v) {
     const x = String(v || '').toLowerCase();
     if (x.includes('wetv')) return '#fb7185';
@@ -908,6 +917,7 @@
         <td data-label="Aksi">
           <div class="row-actions">
             <button class="icon-btn watch" title="Tandai sudah nonton (ep +1)" onclick="watchNext(${d.id})">✅</button>
+            <button class="icon-btn end ${isEnd(d) ? 'active' : ''}" title="${isEnd(d) ? 'Batalkan tanda END' : 'Tandai tamat / selesai ditonton'}" onclick="toggleEnd(${d.id})">${isEnd(d) ? '↩️' : '🏁'}</button>
             <button class="icon-btn edit" title="Edit" onclick="openForm(${d.id})">✏️</button>
             <button class="icon-btn danger" title="Hapus" onclick="askDelete(${d.id})">🗑</button>
           </div>
@@ -938,6 +948,7 @@
           <span class="sub">Diperbarui otomatis</span>
           <div class="row-actions">
             <button class="icon-btn watch" title="Tandai sudah nonton" onclick="watchNext(${d.id})">✅</button>
+            <button class="icon-btn end ${isEnd(d) ? 'active' : ''}" title="${isEnd(d) ? 'Batalkan tanda END' : 'Tandai tamat / selesai ditonton'}" onclick="toggleEnd(${d.id})">${isEnd(d) ? '↩️' : '🏁'}</button>
             <button class="icon-btn edit" title="Edit" onclick="openForm(${d.id})">✏️</button>
             <button class="icon-btn danger" title="Hapus" onclick="askDelete(${d.id})">🗑</button>
           </div>
@@ -1034,6 +1045,26 @@
     save();
     render();
     toast(`▶ Ditandai selesai: Episode ${d.lastEp}`);
+  }
+
+  function toggleEnd(id) {
+    const d = data.find(x => x.id === id);
+    if (!d) { toast('⚠️ Data tidak ditemukan, muat ulang halaman'); return; }
+    if (isEnd(d)) {
+      const base = stripEnd(d.lastEp) || stripEnd(d.nextEp) || '0';
+      d.lastEp = base;
+      d.nextEp = /^\d+$/.test(base)
+        ? String(parseInt(base, 10) + 1).padStart(base.length, '0')
+        : base;
+      toast('↩️ Tanda END dibatalkan');
+    } else {
+      const base = stripEnd(d.lastEp) || stripEnd(d.nextEp) || '0';
+      d.lastEp = base + ' [END]';
+      d.nextEp = base + ' [END]';
+      toast('🏁 Ditandai tamat / selesai ditonton');
+    }
+    save();
+    render();
   }
 
   function askDelete(id) {

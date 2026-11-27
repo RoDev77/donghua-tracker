@@ -30,4 +30,4 @@ GOOGLE_APPLICATION_CREDENTIALS=/path/ke/service-account.json npm run seed
 - Pilihan tampilan Tabel / Kartu
 - Tampilan kartu responsif di layar kecil
 - Tombol kembali ke atas dan favicon khusus
-- Tombol cepat untuk menandai episode selesai ditonton
+- Tombol cepat untuk menandai episode selesai ditonton dan tombol 🏁 untuk menandai/batalkan status END (tamat)

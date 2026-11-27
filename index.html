@@ -1173,7 +1173,7 @@
           const avatar = u.avatar
             ? `<img src="https://cdn.discordapp.com/avatars/${u.id}/${u.avatar}.png?size=64" alt="" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'fallback-avatar',textContent:'${esc(name.charAt(0))}'}))" />`
             : `<div class="fallback-avatar">${esc(name.charAt(0))}</div>`;
-          return `<div class="user-result">${avatar}<div class="info"><b>${esc(name)}</b><span>@${esc(u.username || 'user')} · ${esc(u.id)}</span></div><button class="btn btn-ghost btn-sm" onclick="viewUserProfile('${u.id}')">Lihat →</button></div>`;
+          return `<div class="user-result">${avatar}<div class="info"><b>${esc(name)}</b></div><button class="btn btn-ghost btn-sm" onclick="viewUserProfile('${u.id}')">Lihat →</button></div>`;
         }).join('')
         : '<div class="public-empty">Tidak ada pengguna ditemukan.</div>';
     } catch (e) {

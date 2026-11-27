@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Donghua Tracker — Riwayat Menonton</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0b0f1a;
+    --bg-soft: #111827;
+    --panel: #151c2c;
+    --panel-2: #1b2436;
+    --border: #263149;
+    --text: #e8edf7;
+    --muted: #8b97b0;
+    --accent: #38e0c5;
+    --accent-2: #7c6cff;
+    --ongoing: #34d399;
+    --completed: #60a5fa;
+    --hiatus: #fbbf24;
+    --libur: #a78bfa;
+    --danger: #f87171;
+    --radius: 16px;
+    --shadow: 0 12px 36px rgba(0,0,0,.35);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background:
+      radial-gradient(1100px 520px at 15% -10%, rgba(124,108,255,.18), transparent 60%),
+      radial-gradient(900px 480px at 95% 0%, rgba(56,224,197,.12), transparent 55%),
+      var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 32px 22px 72px; }
+
+  /* Header */
+  header { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 30px; }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .logo {
+    width: 50px; height: 50px; border-radius: 14px; flex: none;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    display: grid; place-items: center; font-size: 24px;
+    box-shadow: 0 8px 24px rgba(56,224,197,.25);
+  }
+  h1 { font-size: 26px; margin: 0; letter-spacing: -.5px; font-weight: 800; }
+  .brand p { margin: 4px 0 0; color: var(--muted); font-size: 13.5px; }
+  .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  /* Buttons */
+  button { font-family: inherit; cursor: pointer; border: 0; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 11px 16px; border-radius: 11px; font-size: 13.5px; font-weight: 700;
+    transition: transform .15s ease, opacity .15s ease, background .15s ease;
+    white-space: nowrap;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), #16b8a0);
+    color: #04201c; box-shadow: 0 8px 22px rgba(56,224,197,.22);
+  }
+  .btn-ghost { background: var(--panel-2); color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: #232f45; }
+  .btn-danger-ghost { background: rgba(248,113,113,.1); color: var(--danger); border: 1px solid rgba(248,113,113,.25); }
+  .btn-sm { padding: 7px 11px; font-size: 12px; border-radius: 9px; }
+  .icon-btn {
+    background: transparent; color: var(--muted); width: 34px; height: 34px;
+    border-radius: 9px; display: grid; place-items: center; font-size: 15px;
+    transition: background .15s, color .15s;
+  }
+  .icon-btn:hover { background: var(--panel-2); color: var(--text); }
+  .icon-btn.danger:hover { color: var(--danger); background: rgba(248,113,113,.12); }
+
+  /* Stats */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+  .stat {
+    background: linear-gradient(160deg, var(--panel), var(--bg-soft));
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 18px 20px; position: relative; overflow: hidden;
+  }
+  .stat::after { content: ''; position: absolute; right: -22px; top: -22px; width: 80px; height: 80px; border-radius: 50%; opacity: .12; background: var(--c, var(--accent)); }
+  .stat .label { font-size: 12px; color: var(--muted); font-weight: 600; letter-spacing: .3px; }
+  .stat .value { font-size: 30px; font-weight: 800; margin-top: 6px; line-height: 1; }
+  .stat .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c, var(--accent)); display: inline-block; margin-right: 8px; vertical-align: middle; }
+
+  /* Toolbar */
+  .toolbar {
+    display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+    background: linear-gradient(160deg, var(--panel), var(--bg-soft));
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px 16px; margin-bottom: 18px;
+  }
+  .search { position: relative; flex: 1 1 260px; }
+  .search span { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 16px; }
+  .search input { padding-left: 40px !important; }
+  input, select {
+    width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text);
+    border-radius: 10px; padding: 11px 13px; font-size: 13.5px; font-family: inherit; outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(56,224,197,.12); }
+  select { cursor: pointer; }
+  .toolbar select { flex: 0 0 180px; min-width: 140px; }
+  .count-info { color: var(--muted); font-size: 12.5px; margin-left: auto; white-space: nowrap; }
+
+  /* Table */
+  .panel {
+    background: linear-gradient(160deg, var(--panel), var(--bg-soft));
+    border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow); overflow: hidden;
+  }
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 740px; }
+  th {
+    text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .7px;
+    color: var(--muted); font-weight: 700; padding: 13px 12px; background: #162031;
+    border-bottom: 1px solid var(--border); white-space: nowrap;
+  }
+  td { padding: 13px 12px; border-bottom: 1px solid rgba(38,49,73,.6); font-size: 13.5px; vertical-align: middle; }
+  th:last-child, td:last-child {
+    position: sticky; right: 0; background: #162031;
+    box-shadow: -10px 0 14px -12px rgba(0,0,0,.8);
+  }
+  td:last-child { background: #151c2c; }
+  tbody tr:hover td:last-child { background: #1a2333; }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody tr { transition: background .15s; }
+  tbody tr:hover { background: rgba(255,255,255,.025); }
+  .title-cell { font-weight: 700; font-size: 14px; }
+  .sub { color: var(--muted); font-size: 11.5px; margin-top: 3px; }
+  .num { font-variant-numeric: tabular-nums; font-weight: 700; }
+  .next-num { color: var(--accent); }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px;
+    border-radius: 999px; font-size: 11.5px; font-weight: 700; white-space: nowrap;
+  }
+  .badge .bdot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .badge.Ongoing { background: rgba(52,211,153,.13); color: var(--ongoing); }
+  .badge.Completed { background: rgba(96,165,250,.13); color: var(--completed); }
+  .badge.Hiatus { background: rgba(251,191,36,.13); color: var(--hiatus); }
+  .badge.Libur { background: rgba(167,139,250,.13); color: var(--libur); }
+  .day-badge { background: var(--panel-2); border: 1px solid var(--border); color: #c3ccdf; padding: 5px 10px; border-radius: 8px; font-size: 11.5px; font-weight: 600; white-space: nowrap; }
+  .via-badge { background: rgba(124,108,255,.12); color: #b6abff; padding: 5px 10px; border-radius: 8px; font-size: 11.5px; font-weight: 600; white-space: nowrap; }
+  .row-actions { display: flex; gap: 2px; justify-content: flex-end; }
+
+  .empty { text-align: center; padding: 72px 20px; color: var(--muted); }
+  .empty .big { font-size: 44px; margin-bottom: 12px; }
+  .empty h3 { color: var(--text); margin: 0 0 6px; font-size: 17px; }
+
+  /* Modal */
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(4,8,16,.72); backdrop-filter: blur(6px);
+    display: none; align-items: center; justify-content: center; padding: 20px; z-index: 50;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 20px;
+    width: min(620px, 100%); max-height: 92vh; overflow-y: auto; box-shadow: 0 30px 80px rgba(0,0,0,.6);
+    animation: pop .2s ease;
+  }
+  @keyframes pop { from { transform: translateY(12px) scale(.98); opacity: 0; } to { transform: none; opacity: 1; } }
+  .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 22px 24px 16px; border-bottom: 1px solid var(--border); }
+  .modal-head h2 { margin: 0; font-size: 19px; }
+  .modal-head p { margin: 5px 0 0; color: var(--muted); font-size: 12.5px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 22px 24px; }
+  .field { display: flex; flex-direction: column; gap: 7px; }
+  .field.full { grid-column: 1 / -1; }
+  .field label { font-size: 12px; font-weight: 700; color: #b9c3d8; }
+  .field label .req { color: var(--accent); }
+  .hint { font-size: 11px; color: var(--muted); }
+  .modal-foot { display: flex; gap: 10px; justify-content: flex-end; padding: 16px 24px 22px; border-top: 1px solid var(--border); }
+
+  /* Confirm */
+  .confirm .modal { width: min(420px, 100%); }
+  .confirm-body { padding: 26px 24px 8px; text-align: center; }
+  .confirm-body .warn { font-size: 40px; }
+  .confirm-body h3 { margin: 10px 0 6px; }
+  .confirm-body p { color: var(--muted); font-size: 13px; margin: 0; }
+  .confirm .modal-foot { justify-content: center; border: 0; padding-top: 18px; }
+
+  /* Toast */
+  #toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(24px);
+    background: #1d2a3f; border: 1px solid var(--border); color: var(--text);
+    padding: 12px 20px; border-radius: 12px; font-size: 13px; font-weight: 600;
+    box-shadow: var(--shadow); opacity: 0; pointer-events: none; transition: all .25s ease; z-index: 100;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 30px; }
+
+  @media (max-width: 760px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .form-grid { grid-template-columns: 1fr; }
+    .toolbar select { flex: 1 1 140px; }
+    .count-info { margin-left: 0; }
+    h1 { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo">🍜</div>
+      <div>
+        <h1>Donghua Tracker</h1>
+        <p>Catat riwayat menonton donghua favoritmu dalam satu tempat.</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-ghost" onclick="exportData()">⬇ Ekspor</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">⬆ Impor</button>
+      <input type="file" id="importFile" accept="application/json" hidden onchange="importData(event)" />
+      <button class="btn btn-primary" onclick="openForm()">＋ Tambah Donghua</button>
+    </div>
+  </header>
+
+  <section class="stats">
+    <div class="stat" style="--c: var(--accent)">
+      <div class="label"><span class="dot"></span>Total Donghua</div>
+      <div class="value" id="statTotal">0</div>
+    </div>
+    <div class="stat" style="--c: var(--ongoing)">
+      <div class="label"><span class="dot"></span>Ongoing</div>
+      <div class="value" id="statOngoing">0</div>
+    </div>
+    <div class="stat" style="--c: var(--completed)">
+      <div class="label"><span class="dot"></span>Completed</div>
+      <div class="value" id="statCompleted">0</div>
+    </div>
+    <div class="stat" style="--c: var(--hiatus)">
+      <div class="label"><span class="dot"></span>Hiatus / Libur</div>
+      <div class="value" id="statPause">0</div>
+    </div>
+  </section>
+
+  <section class="toolbar">
+    <div class="search">
+      <span>🔍</span>
+      <input type="text" id="searchInput" placeholder="Cari judul atau platform..." oninput="render()" />
+    </div>
+    <select id="filterStatus" onchange="render()">
+      <option value="all">Semua Status</option>
+      <option value="Ongoing">Ongoing</option>
+      <option value="Completed">Completed</option>
+      <option value="Hiatus">Hiatus</option>
+      <option value="Libur">Libur</option>
+    </select>
+    <select id="filterDay" onchange="render()">
+      <option value="all">Semua Hari</option>
+      <option>Senin</option><option>Selasa</option><option>Rabu</option>
+      <option>Kamis</option><option>Jumat</option><option>Sabtu</option><option>Minggu</option>
+    </select>
+    <div class="count-info" id="countInfo">0 data</div>
+  </section>
+
+  <section class="panel">
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Judul</th>
+            <th>Hari Update</th>
+            <th>Ep. Terakhir</th>
+            <th>Lanjut Ep.</th>
+            <th>Season</th>
+            <th>Status</th>
+            <th>Nonton Via</th>
+            <th style="text-align:right">Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="emptyState" style="display:none">
+      <div class="big">📺</div>
+      <h3>Belum ada data</h3>
+      <p>Tambah donghua pertama untuk mulai mencatat riwayat menontonmu.</p>
+    </div>
+  </section>
+
+  <footer>Data tersimpan otomatis di browser ini (localStorage). 🍜 Donghua Tracker</footer>
+</div>
+
+<!-- Form Modal -->
+<div class="modal-backdrop" id="formModal">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <div>
+        <h2 id="formTitle">Tambah Donghua</h2>
+        <p>Isi detail riwayat menontonmu.</p>
+      </div>
+      <button class="icon-btn" onclick="closeModal('formModal')" aria-label="Tutup">✕</button>
+    </div>
+    <form id="donghuaForm" onsubmit="saveData(event)">
+      <input type="hidden" id="editId" />
+      <div class="form-grid">
+        <div class="field full">
+          <label>Judul Donghua <span class="req">*</span></label>
+          <input type="text" id="judul" placeholder="Contoh: Renegade Immortal" required />
+        </div>
+        <div class="field">
+          <label>Hari Update</label>
+          <select id="hari">
+            <option value="">- Pilih Hari -</option>
+            <option>Senin</option><option>Selasa</option><option>Rabu</option>
+            <option>Kamis</option><option>Jumat</option><option>Sabtu</option><option>Minggu</option>
+            <option>Tidak pasti</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Season</label>
+          <input type="text" id="season" placeholder="Contoh: Season 1" />
+        </div>
+        <div class="field">
+          <label>Episode Terakhir Nonton</label>
+          <input type="text" id="lastEp" placeholder="Contoh: 26 [END]" oninput="autoNext()" />
+        </div>
+        <div class="field">
+          <label>Lanjut Episode <span class="hint">(isi apa adanya; auto +1 jika angka)</span></label>
+          <input type="text" id="nextEp" placeholder="Contoh: 26 [END] / Lanjut S2" />
+        </div>
+        <div class="field">
+          <label>Status</label>
+          <select id="status">
+            <option>Ongoing</option><option>Completed</option><option>Hiatus</option><option>Libur</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Nonton Via</label>
+          <input type="text" id="via" placeholder="Contoh: Bilibili, WeTV, YouTube..." list="viaList" />
+          <datalist id="viaList">
+            <option value="Bilibili"></option><option value="WeTV"></option>
+            <option value="YouTube"></option><option value="iQIYI"></option>
+            <option value="Netflix"></option><option value="Viu"></option>
+          </datalist>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('formModal')">Batal</button>
+        <button type="submit" class="btn btn-primary" id="saveBtn">💾 Simpan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="modal-backdrop confirm" id="confirmModal">
+  <div class="modal">
+    <div class="confirm-body">
+      <div class="warn">⚠️</div>
+      <h3>Hapus data ini?</h3>
+      <p id="confirmText">Data yang dihapus tidak bisa dikembalikan.</p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('confirmModal')">Batal</button>
+      <button class="btn btn-danger-ghost" id="confirmDelete">🗑 Hapus</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  const STORAGE_KEY = 'donghua-tracker-v6';
+  let data = [];
+  let deleteId = null;
+
+  // Data hasil ekstraksi dari channel #donghua — R DIGITAL STORE | SEASON 2
+  // Nilai episode disimpan apa adanya (termasuk [END], "Lanjut S2", "164 Tengah", dll).
+  // Status & season berasal dari serial donghuanya, bukan dari progres nonton.
+  const seed = [
+    { id: 1, judul: '100.000 Years Of Refining Qi', hari: '', lastEp: '137', nextEp: '138', season: 'Season 1', status: 'Ongoing', via: '' },
+    { id: 2, judul: 'Against the Sky Supreme', hari: '', lastEp: '212', nextEp: '213', season: 'Season 1', status: 'Ongoing', via: 'WeTV' },
+    { id: 3, judul: 'Ancient God Sovereign', hari: '', lastEp: '03', nextEp: '04', season: 'Season 1', status: 'Ongoing', via: '' },
+    { id: 4, judul: 'Apotheosis', hari: '', lastEp: '40', nextEp: '41', season: 'Season 1', status: 'Ongoing', via: '' },
+    { id: 5, judul: 'Azure Legacy', hari: '', lastEp: '105', nextEp: '106', season: '', status: 'Ongoing', via: '' },
+    { id: 6, judul: 'Battle Through the Heavens', hari: '', lastEp: '67', nextEp: '67', season: 'Season 5', status: 'Ongoing', via: '' },
+    { id: 7, judul: 'Beyond Time’s Gaze', hari: 'Sabtu', lastEp: '49', nextEp: '50', season: 'Season 1', status: 'Ongoing', via: '' },
+    { id: 8, judul: 'Everyone in the Sect Except Me is an Undercover Agent', hari: '', lastEp: '14', nextEp: '15', season: 'Season 1', status: 'Ongoing', via: '' },
+    { id: 9, judul: 'Five Elements God Of War', hari: '', lastEp: '03', nextEp: '04', season: 'Season 1', status: 'Ongoing', via: '' },
+    { id: 10, judul: 'Glorious Revenge of Ye Feng', hari: '', lastEp: '24', nextEp: '25', season: 'Season 1', status: 'Completed', via: '' },
+    { id: 11, judul: 'God of Eternity', hari: 'Selasa', lastEp: '16', nextEp: '17', season: 'Season 1', status: 'Ongoing', via: '' },
+    { id: 12, judul: 'Heaven Swallowing Record', hari: '', lastEp: '4', nextEp: '5', season: 'Season 1', status: 'Completed', via: '' },
+    { id: 13, judul: 'Legend of Martial Immortal', hari: '', lastEp: '173', nextEp: '173 [END]', season: 'Season 1', status: 'Completed', via: '' },
+    { id: 14, judul: 'Lord of the Ancient God', hari: 'Selasa/Sabtu', lastEp: '239', nextEp: '239', season: 'Season 2', status: 'Ongoing', via: 'WeTV' },
+    { id: 15, judul: 'Lord of the Ancient God Grave', hari: 'Selasa/Sabtu', lastEp: '339', nextEp: '340', season: 'Season 2', status: 'Ongoing', via: 'WeTV' },
+    { id: 16, judul: 'Martial Master', hari: '', lastEp: '400', nextEp: '401', season: 'Season 2', status: 'Ongoing', via: '' },
+    { id: 17, judul: 'Matchless Emperor', hari: '', lastEp: '37', nextEp: '38', season: 'Season 1', status: 'Ongoing', via: '' },
+    { id: 18, judul: 'My Senior Brother Is Too Steady', hari: '', lastEp: '14', nextEp: '15', season: 'Season 2', status: 'Ongoing', via: '' },
+    { id: 19, judul: 'One Slash to the Heavens', hari: '', lastEp: '7', nextEp: '8', season: 'Season 1', status: 'Ongoing', via: '' },
+    { id: 20, judul: 'Peak of True Martial Arts', hari: 'Rabu/Sabtu/Minggu', lastEp: '97', nextEp: '98', season: 'Season 2', status: 'Ongoing', via: '' },
+    { id: 21, judul: 'Perfect World', hari: 'Jumat', lastEp: '139', nextEp: '140', season: 'Season 2', status: 'Ongoing', via: '' },
+    { id: 22, judul: 'Player Sultan [Wealth and Wonder]', hari: '', lastEp: '1', nextEp: '2', season: 'Season 1', status: 'Ongoing', via: '' },
+    { id: 23, judul: 'Renegade Immortal', hari: 'Senin', lastEp: '168', nextEp: '169', season: 'Season 1', status: 'Ongoing', via: 'WeTV' },
+    { id: 24, judul: 'Return of The Immortal Emperor', hari: '', lastEp: '16', nextEp: '17', season: 'Season 1', status: 'Hiatus', via: '' },
+    { id: 25, judul: 'Soul Land', hari: '', lastEp: '265', nextEp: '~', season: 'Season 2', status: 'Completed', via: '' },
+    { id: 26, judul: 'Stellar Transformation', hari: '', lastEp: '13', nextEp: '14', season: 'Season 5', status: 'Ongoing', via: 'WeTV' },
+    { id: 27, judul: 'Supreme God Emperor', hari: '', lastEp: '626', nextEp: '627', season: '', status: 'Ongoing', via: 'WeTV' },
+    { id: 28, judul: 'Swallowed Star', hari: 'Selasa', lastEp: '164', nextEp: '164 Tengah', season: 'Season 3', status: 'Ongoing', via: '' },
+    { id: 29, judul: 'Tales of Herding Gods', hari: 'Minggu', lastEp: '110', nextEp: '111', season: 'Season 1', status: 'Ongoing', via: 'Anichin' },
+    { id: 30, judul: 'The Adventure\'s of Yang Chen', hari: '', lastEp: '38', nextEp: '39', season: 'Season 1', status: 'Ongoing', via: '' },
+    { id: 31, judul: 'The Emperor of Myriad Realms', hari: '', lastEp: '37', nextEp: '38', season: '', status: 'Completed', via: '' },
+    { id: 32, judul: 'The Eternal Strife', hari: '', lastEp: '2', nextEp: '3', season: 'Season 1', status: 'Ongoing', via: '' },
+    { id: 33, judul: 'The Great Ruler', hari: '', lastEp: '23', nextEp: '24', season: 'Season 1', status: 'Ongoing', via: '' },
+    { id: 34, judul: 'The Rich God', hari: '', lastEp: '2', nextEp: '3', season: 'Season 1', status: 'Ongoing', via: '' },
+    { id: 35, judul: 'The Richest Man In Game', hari: '', lastEp: '5', nextEp: '6', season: 'Season 1', status: 'Completed', via: '' },
+    { id: 36, judul: 'The Success Of Empyrean Xuan Emperor', hari: '', lastEp: '114', nextEp: '115 [SEASON 3]', season: 'Season 3', status: 'Ongoing', via: '' },
+    { id: 37, judul: 'The Supreme Dantian', hari: '', lastEp: '4', nextEp: '5', season: 'Season 1', status: 'Ongoing', via: '' },
+    { id: 38, judul: 'Way of Choices', hari: '', lastEp: '26 [END]', nextEp: '26', season: 'Season 1', status: 'Completed', via: '' },
+    { id: 39, judul: 'Wonderland', hari: '', lastEp: '464', nextEp: '465', season: 'Season 5', status: 'Ongoing', via: '' },
+    { id: 40, judul: 'World of Immortals', hari: '', lastEp: '26 [END]', nextEp: '26 [END]', season: 'Season 1', status: 'Completed', via: '' },
+    { id: 41, judul: 'Dubu Xiaoyao', hari: '', lastEp: '294', nextEp: '295', season: 'Season 1', status: 'Ongoing', via: '' },
+    { id: 42, judul: 'Everlasting God of Sword', hari: '', lastEp: '16', nextEp: '17', season: 'Season 1', status: 'Ongoing', via: '' },
+    { id: 43, judul: 'Forty Millenniums of Cultivation', hari: '', lastEp: '16', nextEp: 'Lanjut S2', season: 'Season 1', status: 'Ongoing', via: '' },
+    { id: 44, judul: 'Lord of the Universe', hari: '', lastEp: '51 - 60', nextEp: 'Lanjut S2', season: 'Season 1', status: 'Ongoing', via: '' },
+    { id: 45, judul: 'The Legend of Sword Domain', hari: '', lastEp: '57', nextEp: '58', season: 'Season 2', status: 'Ongoing', via: '' },
+    { id: 46, judul: 'Wei Wo Du Shen', hari: '', lastEp: '50', nextEp: 'Lanjut S2', season: 'Season 1', status: 'Ongoing', via: '' },
+    { id: 47, judul: 'Wo Shi Da Shenxian', hari: '', lastEp: '32', nextEp: 'Lanjut S2', season: 'Season 1', status: 'Ongoing', via: '' }
+  ];
+
+  const $ = id => document.getElementById(id);
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      data = raw ? JSON.parse(raw) : [...seed];
+      if (!raw) save();
+    } catch (e) {
+      data = [...seed];
+    }
+  }
+  function save() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+  function toast(msg) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._t);
+    t._t = setTimeout(() => t.classList.remove('show'), 2400);
+  }
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  function ensureOption(select, value) {
+    if (!value) return;
+    if (![...select.options].some(o => o.value === value)) {
+      const opt = document.createElement('option');
+      opt.value = value; opt.textContent = value;
+      select.appendChild(opt);
+    }
+  }
+
+  function syncDayFilter() {
+    const sel = $('filterDay');
+    const current = sel.value;
+    const fixed = ['all', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+    [...sel.options].forEach(o => { if (!fixed.includes(o.value)) o.remove(); });
+    [...new Set(data.map(d => d.hari).filter(Boolean))].forEach(h => {
+      if (!fixed.includes(h)) ensureOption(sel, h);
+    });
+    sel.value = current;
+  }
+
+  function render() {
+    syncDayFilter();
+    const q = $('searchInput').value.trim().toLowerCase();
+    const fs = $('filterStatus').value;
+    const fd = $('filterDay').value;
+
+    const filtered = data.filter(d =>
+      (fs === 'all' || d.status === fs) &&
+      (fd === 'all' || d.hari === fd) &&
+      (!q || d.judul.toLowerCase().includes(q) || (d.via || '').toLowerCase().includes(q))
+    );
+
+    $('statTotal').textContent = data.length;
+    $('statOngoing').textContent = data.filter(d => d.status === 'Ongoing').length;
+    $('statCompleted').textContent = data.filter(d => d.status === 'Completed').length;
+    $('statPause').textContent = data.filter(d => d.status === 'Hiatus' || d.status === 'Libur').length;
+    $('countInfo').textContent = filtered.length + ' dari ' + data.length + ' data';
+
+    const body = $('tableBody');
+    body.innerHTML = filtered.map(d => `
+      <tr>
+        <td>
+          <div class="title-cell">${esc(d.judul)}</div>
+          <div class="sub">#${d.id}</div>
+        </td>
+        <td><span class="day-badge">🗓 ${esc(d.hari) || '-'}</span></td>
+        <td class="num">${/END/i.test(String(d.lastEp ?? ''))
+          ? '<span style="color:var(--hiatus);font-weight:800">' + esc(d.lastEp) + '</span>'
+          : esc(d.lastEp ?? '-')}</td>
+        <td class="num next-num">${/END/i.test(String(d.nextEp ?? ''))
+          ? '<span style="color:var(--hiatus);font-weight:800">' + esc(d.nextEp) + '</span>'
+          : esc(d.nextEp ?? '-')}</td>
+        <td>${esc(d.season) || '<span style="color:var(--muted)">-</span>'}</td>
+        <td><span class="badge ${esc(d.status)}"><span class="bdot"></span>${esc(d.status)}</span></td>
+        <td><span class="via-badge">▶ ${esc(d.via) || '-'}</span></td>
+        <td>
+          <div class="row-actions">
+            <button class="icon-btn" title="Tandai sudah nonton (ep +1)" onclick="watchNext(${d.id})">✅</button>
+            <button class="icon-btn" title="Edit" onclick="openForm(${d.id})">✏️</button>
+            <button class="icon-btn danger" title="Hapus" onclick="askDelete(${d.id})">🗑</button>
+          </div>
+        </td>
+      </tr>`).join('');
+
+    $('emptyState').style.display = filtered.length ? 'none' : 'block';
+    document.querySelector('.table-scroll').style.display = filtered.length ? 'block' : 'none';
+  }
+
+  function openForm(id = null) {
+    $('formTitle').textContent = id ? 'Edit Donghua' : 'Tambah Donghua';
+    $('saveBtn').textContent = id ? '💾 Perbarui' : '💾 Simpan';
+    if (id) {
+      const d = data.find(x => x.id === id);
+      $('editId').value = d.id;
+      $('judul').value = d.judul;
+      ensureOption($('hari'), d.hari);
+      $('hari').value = d.hari || '';
+      $('lastEp').value = d.lastEp ?? '';
+      $('nextEp').value = d.nextEp ?? '';
+      $('season').value = d.season || '';
+      $('status').value = d.status;
+      $('via').value = d.via || '';
+    } else {
+      $('donghuaForm').reset();
+      $('editId').value = '';
+      $('status').value = 'Ongoing';
+      $('nextEp').value = '';
+    }
+    openModal('formModal');
+    setTimeout(() => $('judul').focus(), 50);
+  }
+
+  function autoNext() {
+    const last = $('lastEp').value.trim();
+    if (/^\d+$/.test(last)) {
+      const next = String(parseInt(last, 10) + 1).padStart(last.length, '0');
+      $('nextEp').value = next;
+    }
+  }
+
+  function saveData(e) {
+    e.preventDefault();
+    const judul = $('judul').value.trim();
+    if (!judul) return;
+    const payload = {
+      judul,
+      hari: $('hari').value,
+      lastEp: $('lastEp').value.trim(),
+      nextEp: $('nextEp').value.trim(),
+      season: $('season').value.trim(),
+      status: $('status').value,
+      via: $('via').value.trim()
+    };
+    const id = $('editId').value;
+    if (id) {
+      const idx = data.findIndex(x => x.id === Number(id));
+      data[idx] = { ...data[idx], ...payload };
+      toast('✅ Data berhasil diperbarui');
+    } else {
+      data.unshift({ id: Date.now(), ...payload });
+      toast('✅ Donghua berhasil ditambahkan');
+    }
+    save();
+    closeModal('formModal');
+    render();
+  }
+
+  function watchNext(id) {
+    const d = data.find(x => x.id === id);
+    const last = String(d.lastEp ?? '');
+    if (/END/i.test(last)) {
+      toast('🏁 Episode sudah ditandai [END]');
+      return;
+    }
+    if (!/^\d+$/.test(last)) {
+      toast('✏️ Episode bukan angka — edit manual saja');
+      return;
+    }
+    const nextLast = String(parseInt(last, 10) + 1).padStart(last.length, '0');
+    d.lastEp = nextLast;
+    d.nextEp = String(parseInt(nextLast, 10) + 1).padStart(nextLast.length, '0');
+    save();
+    render();
+    toast(`▶ Ditandai selesai: Episode ${d.lastEp}`);
+  }
+
+  function askDelete(id) {
+    deleteId = id;
+    const d = data.find(x => x.id === id);
+    $('confirmText').textContent = `Yakin hapus "${d.judul}" dari daftar?`;
+    openModal('confirmModal');
+  }
+
+  $('confirmDelete').onclick = () => {
+    data = data.filter(x => x.id !== deleteId);
+    save();
+    closeModal('confirmModal');
+    render();
+    toast('🗑 Data dihapus');
+  };
+
+  function openModal(id) { $(id).classList.add('open'); }
+  function closeModal(id) { $(id).classList.remove('open'); }
+  document.querySelectorAll('.modal-backdrop').forEach(m => {
+    m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') document.querySelectorAll('.modal-backdrop.open').forEach(m => m.classList.remove('open'));
+  });
+
+  function exportData() {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'donghua-tracker.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast('⬇ Data diekspor');
+  }
+
+  function importData(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const imported = JSON.parse(e.target.result);
+        if (!Array.isArray(imported)) throw new Error();
+        data = imported;
+        save();
+        render();
+        toast('⬆ Data berhasil diimpor');
+      } catch (err) {
+        toast('❌ File JSON tidak valid');
+      }
+      event.target.value = '';
+    };
+    reader.readAsText(file);
+  }
+
+  load();
+  render();
+</script>
+</body>
+</html>

@@ -31,7 +31,9 @@ GOOGLE_APPLICATION_CREDENTIALS=/path/ke/service-account.json npm run seed
 - Status & season merujuk ke serial donghuanya; tanda selesai menonton dituliskan dengan `[END]` pada kolom episode
 - Tambah, edit, hapus data
 - Tombol 🏁 untuk menandai/batalkan END
-- Pencarian dan filter status/hari
+- Pencarian, filter status/hari, dan pengurutan (judul, episode, status, hari)
+- Tombol 🎲 Pilihkan untuk memilih donghua Ongoing secara acak
+- Ringkasan progres: total episode, rata-rata, dan episode tertinggi
 - Statistik ringkas
 - Ekspor/impor JSON
 - Bagian "Akhir-akhir Ini Sering Ditonton" (bisa diatur dari form)

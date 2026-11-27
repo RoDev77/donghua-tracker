@@ -362,6 +362,27 @@
     border: 1px solid rgba(60,224,196,.22); padding: 3px 9px; border-radius: 99px;
   }
 
+  /* Insight strip */
+  .insight-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+  .insight {
+    display: flex; align-items: center; gap: 11px; padding: 12px 14px;
+    background: linear-gradient(150deg, var(--panel-2), transparent);
+    border: 1px solid var(--border); border-radius: 14px;
+  }
+  .insight-ico { font-size: 19px; flex: none; }
+  .insight div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .insight .k { font-size: 10px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); font-weight: 800; }
+  .insight b { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  @media (max-width: 760px) { .insight-strip { grid-template-columns: 1fr; } }
+
+  /* Random button */
+  .random-btn {
+    background: rgba(251,191,36,.12); color: var(--hiatus); font-size: 12px; font-weight: 800;
+    padding: 7px 12px; border-radius: 8px; border: 1px solid rgba(251,191,36,.22);
+    transition: background .15s, transform .15s;
+  }
+  .random-btn:hover { background: rgba(251,191,36,.2); transform: translateY(-1px); }
+
   /* Login gate */
   .login-gate { display: grid; place-items: center; min-height: 58vh; animation: rise .5s ease both; }
   .gate-card {
@@ -518,6 +539,12 @@
     </div>
   </section>
 
+  <section class="insight-strip">
+    <div class="insight"><span class="insight-ico">📊</span><div><span class="k">Total episode tercatat</span><b id="insightTotal">0</b></div></div>
+    <div class="insight"><span class="insight-ico">📈</span><div><span class="k">Rata-rata episode</span><b id="insightAvg">0</b></div></div>
+    <div class="insight"><span class="insight-ico">🏆</span><div><span class="k">Episode tertinggi</span><b id="insightMax">-</b></div></div>
+  </section>
+
   <section class="featured" id="featuredSection" style="display:none">
     <div class="featured-head">
       <div>
@@ -550,9 +577,20 @@
         <option>Kamis</option><option>Jumat</option><option>Sabtu</option><option>Minggu</option>
       </select>
     </div>
+    <div class="select-wrap">
+      <select id="sortBy" onchange="render()" title="Urutkan">
+        <option value="default">Urutan asli</option>
+        <option value="judul">Judul A–Z</option>
+        <option value="ep-desc">Episode terbesar</option>
+        <option value="ep-asc">Episode terkecil</option>
+        <option value="status">Berdasarkan status</option>
+        <option value="hari">Berdasarkan hari</option>
+      </select>
+    </div>
     <div class="view-toggle">
       <button id="viewTable" class="active" onclick="setView('table')" title="Tampilan tabel">▤ Tabel</button>
       <button id="viewCard" onclick="setView('card')" title="Tampilan kartu">▦ Kartu</button>
+      <button class="random-btn" onclick="pickRandom()" title="Pilih donghua acak">🎲 Pilihkan</button>
     </div>
     <div class="count-info" id="countInfo">0 data</div>
   </section>
@@ -925,6 +963,19 @@
     sel.value = current;
   }
 
+  function numOf(v) {
+    const m = String(v ?? '').match(/\d+/);
+    return m ? parseInt(m[0], 10) : 0;
+  }
+
+  function pickRandom() {
+    const pool = data.filter(d => d.status === 'Ongoing');
+    if (!pool.length) { toast('⚠️ Tidak ada donghua Ongoing'); return; }
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    focusJudul(pick.judul);
+    toast('🎲 Pilihan hari ini: ' + pick.judul);
+  }
+
   function hueOf(s) {
     let h = 0;
     for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) % 360;
@@ -966,6 +1017,25 @@
       (fd === 'all' || d.hari === fd) &&
       (!q || d.judul.toLowerCase().includes(q) || (d.via || '').toLowerCase().includes(q))
     );
+
+    const statusOrder = ['Ongoing', 'Hiatus', 'Libur', 'Completed'];
+    const dayOrder = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+    const sorters = {
+      default: (a, b) => a.id - b.id,
+      judul: (a, b) => String(a.judul).localeCompare(String(b.judul)),
+      'ep-desc': (a, b) => numOf(b.lastEp) - numOf(a.lastEp),
+      'ep-asc': (a, b) => numOf(a.lastEp) - numOf(b.lastEp),
+      status: (a, b) => statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status),
+      hari: (a, b) => dayOrder.findIndex(x => String(a.hari || '').includes(x)) - dayOrder.findIndex(x => String(b.hari || '').includes(x))
+    };
+    filtered.sort(sorters[$('sortBy').value] || sorters.default);
+
+    const nums = data.map(d => numOf(d.lastEp)).filter(n => n > 0);
+    const totalEp = nums.reduce((a, b) => a + b, 0);
+    $('insightTotal').textContent = totalEp.toLocaleString('id-ID');
+    $('insightAvg').textContent = nums.length ? Math.round(totalEp / nums.length).toLocaleString('id-ID') : '0';
+    const top = data.reduce((best, d) => (!best || numOf(d.lastEp) > numOf(best.lastEp)) ? d : best, null);
+    $('insightMax').textContent = top ? `${top.judul} (${top.lastEp})` : '-';
 
     $('statTotal').textContent = data.length;
     $('statOngoing').textContent = data.filter(d => d.status === 'Ongoing').length;

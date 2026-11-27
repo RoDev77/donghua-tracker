@@ -21,6 +21,7 @@ const db = getFirestore();
   seed.forEach(item => {
     batch.set(col.doc(String(item.id)), {
       judul: String(item.judul || ''),
+      judulLain: String(item.judulLain || ''),
       hari: String(item.hari || ''),
       lastEp: String(item.lastEp ?? ''),
       nextEp: String(item.nextEp ?? ''),

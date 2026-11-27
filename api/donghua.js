@@ -40,6 +40,7 @@ module.exports = async function handler(req, res) {
         const id = String(item.id);
         batch.set(col.doc(id), {
           judul: String(item.judul || ''),
+          judulLain: String(item.judulLain || ''),
           hari: String(item.hari || ''),
           lastEp: String(item.lastEp ?? ''),
           nextEp: String(item.nextEp ?? ''),

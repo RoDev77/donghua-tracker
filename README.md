@@ -18,7 +18,7 @@ GOOGLE_APPLICATION_CREDENTIALS=/path/ke/service-account.json npm run seed
 - `PUT /api/donghua` — timpa seluruh data dengan array yang dikirim
 
 ## Fitur
-- Field: Judul, Hari Update, Episode Terakhir Nonton, Lanjut Episode, Season, Status, Nonton Via
+- Field: Judul, Judul Lain (alternatif), Hari Update, Episode Terakhir Nonton, Lanjut Episode, Season, Status, Nonton Via
 - Nilai episode disimpan apa adanya (misalnya `26 [END]`, `Lanjut S2`, `164 Tengah`)
 - Status & season merujuk ke serial donghuanya; tanda selesai menonton dituliskan dengan `[END]` pada kolom episode
 - Tambah, edit, hapus data

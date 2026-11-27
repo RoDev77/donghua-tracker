@@ -222,6 +222,8 @@
     border: 1px solid hsl(var(--hue) 70% 60% / .28);
   }
   .sub { color: var(--muted); font-size: 11px; margin-top: 3px; }
+  .alt-title { color: var(--accent-2); font-weight: 600; }
+  [data-theme="light"] .alt-title { color: #6d4aff; }
   .num { font-variant-numeric: tabular-nums; font-weight: 800; }
   .next-num { color: var(--accent); }
   .ep-pill {
@@ -530,6 +532,10 @@
           <label>Judul Donghua <span class="req">*</span></label>
           <input type="text" id="judul" placeholder="Contoh: Renegade Immortal" required />
         </div>
+        <div class="field full">
+          <label>Judul Lain <span class="hint">(judul alternatif / judul komik / judul WeTV)</span></label>
+          <input type="text" id="judulLain" placeholder="Contoh: 仙逆 / Renegade Immortal (WeTV)" />
+        </div>
         <div class="field">
           <label>Hari Update</label>
           <select id="hari">
@@ -794,6 +800,7 @@
             <span>${esc(d.judul)}</span>
           </div>
           <div class="sub">#${d.id}</div>
+          ${d.judulLain ? `<div class="sub alt-title">↳ ${esc(d.judulLain)}</div>` : ''}
         </td>
         <td data-label="Hari Update"><span class="day-badge ${/\//.test(d.hari || '') ? 'multi' : ''}">🗓 ${esc(d.hari) || '-'}</span></td>
         <td class="num" data-label="Ep. Terakhir"><span class="ep-pill ${/END/i.test(String(d.lastEp ?? '')) ? 'end' : ''}">${esc(d.lastEp ?? '-')}</span></td>
@@ -817,6 +824,7 @@
           <div style="flex:1;min-width:0">
             <div class="title-cell">${esc(d.judul)}</div>
             <div class="sub">#${d.id}</div>
+            ${d.judulLain ? `<div class="sub alt-title">↳ ${esc(d.judulLain)}</div>` : ''}
           </div>
           <span class="badge ${esc(d.status)}"><span class="bdot"></span>${esc(d.status)}</span>
         </div>
@@ -851,6 +859,7 @@
       if (!d) { toast('⚠️ Data tidak ditemukan, muat ulang halaman'); return; }
       $('editId').value = d.id;
       $('judul').value = d.judul;
+      $('judulLain').value = d.judulLain ?? '';
       ensureOption($('hari'), d.hari);
       $('hari').value = d.hari || '';
       $('lastEp').value = d.lastEp ?? '';
@@ -882,6 +891,7 @@
     if (!judul) return;
     const payload = {
       judul,
+      judulLain: $('judulLain').value.trim(),
       hari: $('hari').value,
       lastEp: $('lastEp').value.trim(),
       nextEp: $('nextEp').value.trim(),

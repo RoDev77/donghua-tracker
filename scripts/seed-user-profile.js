@@ -6,7 +6,7 @@ const db = getFirestore();
 
 (async () => {
   await db.collection('users').doc('603891834858635274').set({
-    username: '0xRodi',
+    username: 'ahmadrodiii',
     globalName: '0xRodi™',
     avatar: '',
     updatedAt: FieldValue.serverTimestamp()

@@ -50,6 +50,21 @@ module.exports = async function handler(req, res) {
       loginAt: Date.now(),
       exp: Date.now() + 7 * 24 * 60 * 60 * 1000
     };
+    // Simpan profil publik agar user lain bisa mencari/melihat jurnalnya.
+    try {
+      const admin = require('firebase-admin/app');
+      const firestore = require('firebase-admin/firestore');
+      if (!admin.getApps().length) admin.initializeApp();
+      await firestore.getFirestore().collection('users').doc(String(user.id)).set({
+        username: user.username || '',
+        globalName: user.global_name || user.username || '',
+        avatar: user.avatar || '',
+        updatedAt: firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    } catch (e) {
+      // Profil publik gagal disimpan tidak menggagalkan login.
+    }
+
     setCookie(res, 'dh_session', sign(payload), 7 * 24 * 60 * 60);
     clearCookie(res, 'discord_oauth_state');
     res.writeHead(302, { Location: '/' });

@@ -1095,9 +1095,13 @@
     const btn = $('discordBtn');
     btn.style.display = useApi() ? 'inline-flex' : 'none';
     btn.classList.toggle('is-user', !!discordUser);
-    btn.innerHTML = discordUser
-      ? `<span class="avatar-wrap"><img class="avatar-mini" src="${discordAvatar(discordUser, 64)}" alt="" onerror="this.remove()" /></span><span class="profile-name">${esc(discordUser.globalName || discordUser.username)}</span><span class="profile-chev">⌄</span>`
-      : '<span>🔐 Login Discord</span>';
+    if (discordUser) {
+      btn.style.cssText = 'padding:4px 10px 4px 4px!important;border-radius:99px!important;gap:7px!important;min-height:34px;max-height:34px;font-size:11px';
+      btn.innerHTML = `<span style="position:relative;width:24px;height:24px;flex:none;display:inline-block"><img src="${discordAvatar(discordUser, 64)}" alt="" onerror="this.remove()" style="width:24px;height:24px;border-radius:50%;object-fit:cover;display:block;border:1.5px solid rgba(255,255,255,.2)" /></span><span style="font-size:11px;font-weight:800;max-width:86px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(discordUser.globalName || discordUser.username)}</span><span style="color:var(--muted);font-size:10px;margin-left:-3px">⌄</span>`;
+    } else {
+      btn.style.cssText = '';
+      btn.innerHTML = '<span>🔐 Login Discord</span>';
+    }
     $('storageChip').textContent = useApi() ? '✦ Firestore' : '✦ Local Storage';
     $('storageText').textContent = useApi()
       ? 'Data tersimpan di akun Discordmu.'

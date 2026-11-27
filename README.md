@@ -34,6 +34,8 @@ GOOGLE_APPLICATION_CREDENTIALS=/path/ke/service-account.json npm run seed
 - Pencarian, filter status/hari, dan pengurutan (judul, episode, status, hari)
 - Tombol 🎲 Pilihkan untuk memilih donghua Ongoing secara acak
 - Ringkasan progres: total episode, rata-rata, dan episode tertinggi
+- Grafik distribusi status dan filter cepat berjumlah
+- Log aktivitas (tambah/edit/hapus/tandai episode/END) yang tersimpan di browser
 - Statistik ringkas
 - Ekspor/impor JSON
 - Bagian "Akhir-akhir Ini Sering Ditonton" (bisa diatur dari form)

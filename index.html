@@ -362,6 +362,35 @@
     border: 1px solid rgba(60,224,196,.22); padding: 3px 9px; border-radius: 99px;
   }
 
+  /* Status distribution */
+  .status-panel { margin-bottom: 18px; }
+  .status-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); }
+  .status-legend { display: flex; gap: 12px; flex-wrap: wrap; text-transform: none; letter-spacing: 0; font-size: 10.5px; }
+  .status-legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .status-legend i { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+  .status-track { height: 10px; border-radius: 99px; overflow: hidden; display: flex; background: var(--panel-2); border: 1px solid var(--border); }
+  .status-track i { display: block; height: 100%; transition: width .4s ease; }
+
+  /* Quick filters */
+  .quick-filters { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 14px; }
+  .quick-chip {
+    background: var(--panel-2); border: 1px solid var(--border); color: var(--muted);
+    padding: 6px 12px; border-radius: 99px; font-size: 11.5px; font-weight: 800;
+    cursor: pointer; transition: all .15s ease;
+  }
+  .quick-chip:hover { color: var(--text); transform: translateY(-1px); }
+  .quick-chip.active { color: var(--accent); border-color: rgba(60,224,196,.4); background: rgba(60,224,196,.12); }
+  .quick-chip b { color: var(--text); margin-left: 5px; }
+
+  /* Activity log */
+  .activity-log { margin-top: 22px; border: 1px solid var(--border); border-radius: 14px; background: var(--panel); padding: 12px 16px; }
+  .activity-log summary { cursor: pointer; font-size: 12.5px; font-weight: 800; color: var(--text); }
+  .activity-log summary span { color: var(--muted); font-weight: 600; }
+  .activity-list { margin: 12px 0; display: grid; gap: 7px; }
+  .activity-item { display: flex; gap: 10px; align-items: baseline; font-size: 12px; padding: 7px 10px; background: var(--panel-2); border-radius: 9px; }
+  .activity-item time { color: var(--muted); font-size: 10.5px; flex: none; }
+  .activity-empty { color: var(--muted); font-size: 12px; padding: 6px 0; }
+
   /* Insight strip */
   .insight-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
   .insight {
@@ -545,6 +574,14 @@
     <div class="insight"><span class="insight-ico">🏆</span><div><span class="k">Episode tertinggi</span><b id="insightMax">-</b></div></div>
   </section>
 
+  <section class="status-panel">
+    <div class="status-head">
+      <span>📊 Distribusi Status</span>
+      <span id="statusLegend" class="status-legend"></span>
+    </div>
+    <div class="status-track" id="statusTrack"></div>
+  </section>
+
   <section class="featured" id="featuredSection" style="display:none">
     <div class="featured-head">
       <div>
@@ -595,6 +632,8 @@
     <div class="count-info" id="countInfo">0 data</div>
   </section>
 
+  <div class="quick-filters" id="quickFilters"></div>
+
   <section class="panel" id="dataPanel">
     <div class="table-scroll">
       <table>
@@ -632,6 +671,12 @@
       <span class="gate-note" id="gateNote"></span>
     </div>
   </section>
+
+  <details class="activity-log">
+    <summary>🕘 Aktivitas terakhir <span id="activityCount"></span></summary>
+    <div id="activityList" class="activity-list"></div>
+    <button class="btn btn-ghost btn-sm" onclick="clearActivity()">Bersihkan log</button>
+  </details>
 
   <footer>
     <span class="footer-chip" id="storageChip">✦ Firestore</span>
@@ -968,6 +1013,58 @@
     return m ? parseInt(m[0], 10) : 0;
   }
 
+  const ACTIVITY_KEY = 'donghua-tracker-activity';
+
+  function loadActivity() {
+    try { return JSON.parse(localStorage.getItem(ACTIVITY_KEY) || '[]'); }
+    catch (e) { return []; }
+  }
+
+  function logActivity(icon, text) {
+    const arr = loadActivity();
+    arr.unshift({ icon, text, ts: Date.now() });
+    localStorage.setItem(ACTIVITY_KEY, JSON.stringify(arr.slice(0, 30)));
+    renderActivity();
+  }
+
+  function renderActivity() {
+    const arr = loadActivity();
+    $('activityCount').textContent = arr.length ? '(' + arr.length + ')' : '';
+    $('activityList').innerHTML = arr.length
+      ? arr.slice(0, 8).map(a => `<div class="activity-item"><time>${new Date(a.ts).toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</time><span>${esc(a.icon)} ${esc(a.text)}</span></div>`).join('')
+      : '<div class="activity-empty">Belum ada aktivitas.</div>';
+  }
+
+  function clearActivity() {
+    localStorage.removeItem(ACTIVITY_KEY);
+    renderActivity();
+    toast('🧹 Log aktivitas dibersihkan');
+  }
+
+  function setStatusFilter(value) {
+    $('filterStatus').value = value;
+    render();
+  }
+
+  function renderStatusPanel() {
+    const statuses = ['Ongoing', 'Completed', 'Hiatus', 'Libur'];
+    const colors = { Ongoing: 'var(--ongoing)', Completed: 'var(--completed)', Hiatus: 'var(--hiatus)', Libur: 'var(--libur)' };
+    const total = data.length || 1;
+    const counts = statuses.map(s => ({ s, n: data.filter(d => d.status === s).length }));
+    $('statusTrack').innerHTML = counts.map(c => `<i style="width:${(c.n / total) * 100}%;background:${colors[c.s]}"></i>`).join('');
+    $('statusLegend').innerHTML = counts.map(c => `<span><i style="background:${colors[c.s]}"></i>${c.s} ${c.n}</span>`).join('');
+  }
+
+  function renderQuickFilters() {
+    const options = ['all', 'Ongoing', 'Completed', 'Hiatus', 'Libur'];
+    const cur = $('filterStatus').value;
+    $('quickFilters').innerHTML = options.map(s => {
+      const n = s === 'all' ? data.length : data.filter(d => d.status === s).length;
+      const label = s === 'all' ? 'Semua' : s;
+      return `<button class="quick-chip ${cur === s ? 'active' : ''}" onclick="setStatusFilter('${s}')">${label}<b>${n}</b></button>`;
+    }).join('');
+  }
+
   function pickRandom() {
     const pool = data.filter(d => d.status === 'Ongoing');
     if (!pool.length) { toast('⚠️ Tidak ada donghua Ongoing'); return; }
@@ -1041,6 +1138,8 @@
     $('statOngoing').textContent = data.filter(d => d.status === 'Ongoing').length;
     $('statCompleted').textContent = data.filter(d => d.status === 'Completed').length;
     $('statPause').textContent = data.filter(d => d.status === 'Hiatus' || d.status === 'Libur').length;
+    renderStatusPanel();
+    renderQuickFilters();
     $('countInfo').textContent = filtered.length + ' dari ' + data.length + ' data';
     $('heroCount').textContent = '✦ ' + data.length + ' judul terlacak';
 
@@ -1189,9 +1288,11 @@
       if (idx < 0) { toast('⚠️ Data tidak ditemukan, muat ulang halaman'); return; }
       data[idx] = { ...data[idx], ...payload };
       toast('✅ Data berhasil diperbarui');
+      logActivity('✏️', 'Update ' + judul);
     } else {
       data.unshift({ id: Date.now(), ...payload });
       toast('✅ Donghua berhasil ditambahkan');
+      logActivity('➕', 'Tambah ' + judul);
     }
     save();
     closeModal('formModal');
@@ -1216,12 +1317,14 @@
     save();
     render();
     toast(`▶ Ditandai selesai: Episode ${d.lastEp}`);
+    logActivity('▶', d.judul + ' → Episode ' + d.lastEp);
   }
 
   function toggleEnd(id) {
     const d = data.find(x => x.id === id);
     if (!d) { toast('⚠️ Data tidak ditemukan, muat ulang halaman'); return; }
-    if (isEnd(d)) {
+    const wasEnd = isEnd(d);
+    if (wasEnd) {
       const base = stripEnd(d.lastEp) || stripEnd(d.nextEp) || '0';
       d.lastEp = base;
       d.nextEp = /^\d+$/.test(base)
@@ -1234,6 +1337,7 @@
       d.nextEp = base + ' [END]';
       toast('🏁 Ditandai tamat / selesai ditonton');
     }
+    logActivity(wasEnd ? '↩️' : '🏁', d.judul + (wasEnd ? ' · END dibatalkan' : ' · ditandai END'));
     save();
     render();
   }
@@ -1247,7 +1351,9 @@
   }
 
   $('confirmDelete').onclick = () => {
+    const removed = data.find(x => x.id === deleteId);
     data = data.filter(x => x.id !== deleteId);
+    if (removed) logActivity('🗑', 'Hapus ' + removed.judul);
     save();
     closeModal('confirmModal');
     render();
@@ -1298,6 +1404,7 @@
     await checkDiscord();
     if (!(useApi() && !discordUser)) await load();
     setView(viewMode);
+    renderActivity();
   })();
 </script>
 </body>

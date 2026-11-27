@@ -337,6 +337,42 @@
   .hint { font-size: 11px; color: var(--muted); }
   .modal-foot { display: flex; gap: 10px; justify-content: flex-end; padding: 16px 24px 22px; border-top: 1px solid var(--border); }
 
+  /* Profile */
+  .profile-modal { width: min(480px, 100%); overflow: hidden; }
+  .profile-banner {
+    height: 104px; position: relative;
+    background: radial-gradient(circle at 20% 20%, rgba(60,224,196,.55), transparent 55%),
+                radial-gradient(circle at 80% 60%, rgba(139,123,255,.6), transparent 55%),
+                linear-gradient(120deg, #16213a, #2a1f4a);
+  }
+  .profile-body { padding: 0 24px 24px; }
+  .profile-avatar {
+    width: 80px; height: 80px; margin-top: -40px; position: relative;
+    border-radius: 22px; border: 4px solid var(--panel); background: var(--panel-2);
+    display: grid; place-items: center; font-size: 30px; overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  }
+  .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .profile-identity { margin-top: 10px; }
+  .profile-identity h2 { margin: 0; font-size: 21px; letter-spacing: -.4px; }
+  .profile-handle { color: var(--muted); font-size: 12.5px; margin-top: 3px; }
+  .profile-id-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 14px 0; }
+  .profile-id-row > span {
+    font-family: ui-monospace, Consolas, monospace; font-size: 11px; color: var(--accent);
+    background: rgba(60,224,196,.1); border: 1px solid rgba(60,224,196,.22);
+    padding: 6px 9px; border-radius: 8px;
+  }
+  .profile-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin-bottom: 18px; }
+  .profile-stat { background: var(--panel-2); border: 1px solid var(--border); border-radius: 12px; padding: 10px; text-align: center; }
+  .profile-stat b { display: block; font-size: 17px; }
+  .profile-stat span { font-size: 9.5px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); font-weight: 800; }
+  .profile-section-title { font-size: 10.5px; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); font-weight: 800; margin-bottom: 9px; }
+  .profile-prefs { display: flex; flex-direction: column; gap: 9px; margin-bottom: 18px; }
+  .profile-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .profile-actions .btn { flex: 1 1 auto; }
+  .profile-footnote { margin-top: 14px; font-size: 10.5px; color: var(--muted); text-align: center; }
+  .profile-btn .avatar-mini { width: 22px; height: 22px; border-radius: 7px; object-fit: cover; flex: none; }
+
   /* Confirm */
   .confirm .modal { width: min(420px, 100%); }
   .confirm-body { padding: 26px 24px 8px; text-align: center; }
@@ -765,6 +801,39 @@
   </div>
 </div>
 
+<!-- Profile Modal -->
+<div class="modal-backdrop" id="profileModal">
+  <div class="modal profile-modal" role="dialog" aria-modal="true">
+    <div class="profile-banner">
+      <button class="icon-btn" onclick="closeModal('profileModal')" aria-label="Tutup" style="position:absolute;right:14px;top:14px;color:#fff">✕</button>
+    </div>
+    <div class="profile-body">
+      <div class="profile-avatar" id="profileAvatar">🍜</div>
+      <div class="profile-identity">
+        <h2 id="profileName">—</h2>
+        <div class="profile-handle" id="profileHandle">—</div>
+      </div>
+      <div class="profile-id-row">
+        <span id="profileId">—</span>
+        <button class="btn btn-ghost btn-sm" onclick="copyDiscordId()">⧉ Salin ID</button>
+        <a class="btn btn-ghost btn-sm" id="profileLink" href="#" target="_blank" rel="noopener">↗ Profil Discord</a>
+      </div>
+      <div class="profile-stats" id="profileStats"></div>
+      <div class="profile-section-title">Preferensi</div>
+      <div class="profile-prefs">
+        <label class="check-label"><input type="checkbox" id="profileTheme" onchange="profileToggleTheme()" /> Tema terang</label>
+        <label class="check-label"><input type="checkbox" id="profileCardView" onchange="profileToggleView()" /> Tampilan kartu sebagai default</label>
+      </div>
+      <div class="profile-actions">
+        <button class="btn btn-ghost" onclick="exportData()">⬇ Ekspor data</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">⬆ Impor data</button>
+        <button class="btn btn-danger-ghost" onclick="logoutDiscord()">🚪 Keluar</button>
+      </div>
+      <div class="profile-footnote" id="profileSince"></div>
+    </div>
+  </div>
+</div>
+
 <!-- Confirm Modal -->
 <div class="modal-backdrop confirm" id="confirmModal">
   <div class="modal">
@@ -904,12 +973,63 @@
   async function logoutDiscord() {
     await fetch('/api/logout', { method: 'POST' }).catch(() => {});
     discordUser = null;
+    closeModal('profileModal');
     applyGate();
+    toast('👋 Berhasil keluar');
   }
 
   function discordAction() {
-    if (discordUser) logoutDiscord();
+    if (discordUser) openProfile();
     else loginDiscord();
+  }
+
+  function discordAvatar(user, size = 128) {
+    if (user.avatar) return `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png?size=${size}`;
+    return 'assets/donghua-world.jpg';
+  }
+
+  function openProfile() {
+    if (!discordUser) return;
+    const u = discordUser;
+    $('profileAvatar').innerHTML = `<img src="${discordAvatar(u)}" alt="" onerror="this.remove()" />`;
+    $('profileName').textContent = u.globalName || u.username || 'Pengguna';
+    $('profileHandle').textContent = '@' + (u.username || 'user') + (u.discriminator && u.discriminator !== '0' ? '#' + u.discriminator : '');
+    $('profileId').textContent = u.id || '-';
+    $('profileLink').href = u.id ? 'https://discord.com/users/' + u.id : '#';
+    $('profileSince').textContent = u.loginAt
+      ? 'Login terakhir: ' + new Date(u.loginAt).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })
+      : '';
+    const ongoing = data.filter(d => d.status === 'Ongoing').length;
+    const completed = data.filter(d => d.status === 'Completed').length;
+    const episodes = data.reduce((a, d) => a + numOf(d.lastEp), 0);
+    $('profileStats').innerHTML = `
+      <div class="profile-stat"><b>${data.length}</b><span>Donghua</span></div>
+      <div class="profile-stat"><b>${ongoing}</b><span>Ongoing</span></div>
+      <div class="profile-stat"><b>${completed}</b><span>Completed</span></div>
+      <div class="profile-stat"><b>${episodes.toLocaleString('id-ID')}</b><span>Episode</span></div>
+      <div class="profile-stat"><b>${data.filter(d => d.seringDitonton).length}</b><span>Favorit</span></div>
+      <div class="profile-stat"><b>${loadActivity().length}</b><span>Aktivitas</span></div>`;
+    $('profileTheme').checked = document.documentElement.dataset.theme === 'light';
+    $('profileCardView').checked = viewMode === 'card';
+    openModal('profileModal');
+  }
+
+  async function copyDiscordId() {
+    if (!discordUser) return;
+    try {
+      await navigator.clipboard.writeText(discordUser.id);
+      toast('⧉ ID Discord disalin');
+    } catch (e) {
+      toast('⚠️ Gagal menyalin ID');
+    }
+  }
+
+  function profileToggleTheme() {
+    applyTheme($('profileTheme').checked ? 'light' : 'dark');
+  }
+
+  function profileToggleView() {
+    setView($('profileCardView').checked ? 'card' : 'table');
   }
 
   function applyGate() {
@@ -919,7 +1039,9 @@
     $('headerActions').style.display = locked ? 'none' : 'flex';
     const btn = $('discordBtn');
     btn.style.display = useApi() ? 'inline-flex' : 'none';
-    btn.textContent = discordUser ? '👤 ' + discordUser.username : '🔐 Login Discord';
+    btn.innerHTML = discordUser
+      ? `<img class="avatar-mini" src="${discordAvatar(discordUser, 64)}" alt="" onerror="this.remove()" /><span>${esc(discordUser.globalName || discordUser.username)}</span>`
+      : '<span>🔐 Login Discord</span>';
     $('storageChip').textContent = useApi() ? '✦ Firestore' : '✦ Local Storage';
     $('storageText').textContent = useApi()
       ? 'Data tersimpan di akun Discordmu.'

@@ -6,6 +6,14 @@ module.exports = (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   if (!payload) return res.status(200).json({ user: null });
   return res.status(200).json({
-    user: { id: payload.id, username: payload.username, avatar: payload.avatar || null }
+    user: {
+      id: payload.id,
+      username: payload.username,
+      globalName: payload.globalName || payload.username,
+      discriminator: payload.discriminator || null,
+      avatar: payload.avatar || null,
+      banner: payload.banner || null,
+      loginAt: payload.loginAt || null
+    }
   });
 };

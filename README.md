@@ -41,5 +41,6 @@ GOOGLE_APPLICATION_CREDENTIALS=/path/ke/service-account.json npm run seed
 - Ekspor/impor JSON
 - Bagian "Akhir-akhir Ini Sering Ditonton" (bisa diatur dari form)
 - Pilihan tampilan Tabel / Kartu
+- Halaman profil Discord (identitas, avatar, statistik, preferensi, ekspor/impor, logout)
 - Toggle tema gelap/terang
 - Tombol kembali ke atas dan favicon khusus

@@ -43,7 +43,11 @@ module.exports = async function handler(req, res) {
     const payload = {
       id: user.id,
       username: user.username,
+      globalName: user.global_name || user.username,
+      discriminator: user.discriminator || null,
       avatar: user.avatar || null,
+      banner: user.banner || null,
+      loginAt: Date.now(),
       exp: Date.now() + 7 * 24 * 60 * 60 * 1000
     };
     setCookie(res, 'dh_session', sign(payload), 7 * 24 * 60 * 60);

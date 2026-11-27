@@ -25,8 +25,8 @@ const MAP = {
 ${body}
 };
 const norm = s => String(s || '').toLowerCase()
-  .replace(/\.[a-z0-9]+$/i, '')
-  .replace(/\./g, '')
+  .replace(/\\.[a-z0-9]+$/i, '')
+  .replace(/\\./g, '')
   .replace(/['’]/g, '')
   .replace(/[^a-z0-9]+/g, '-')
   .replace(/^-+|-+$/g, '');

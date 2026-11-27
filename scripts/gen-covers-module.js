@@ -3,7 +3,8 @@ const path = require('path');
 
 const DIR = path.join(__dirname, '..', 'assets', 'covers');
 const norm = s => String(s || '').toLowerCase()
-  .replace(/\.[^.]+$/, '')
+  .replace(/\.[a-z0-9]+$/i, '')
+  .replace(/\./g, '')
   .replace(/['’]/g, '')
   .replace(/[^a-z0-9]+/g, '-')
   .replace(/^-+|-+$/g, '');
@@ -12,6 +13,7 @@ const map = {};
 fs.readdirSync(DIR).forEach(name => {
   map[norm(name)] = 'assets/covers/' + name;
 });
+map['player-sultan-wealth-and-wonder'] = 'assets/covers/player-sultan.webp';
 
 const body = Object.entries(map)
   .sort((a, b) => a[0].localeCompare(b[0]))

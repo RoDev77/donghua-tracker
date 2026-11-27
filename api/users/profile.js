@@ -25,7 +25,11 @@ module.exports = async function handler(req, res) {
     } : { id: uid, username: uid, globalName: uid, avatar: '' };
 
     const snap = await db.collection('users').doc(uid).collection('donghua').get();
-    const donghua = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const donghua = snap.docs.map(doc => {
+      const data = doc.data();
+      const cover = String(data.cover || '').replace(/against-the-gods\.jpe?g$/i, 'assets/covers/against-the-gods.webp');
+      return { id: doc.id, ...data, cover };
+    });
     donghua.sort((a, b) => Number(a.id) - Number(b.id));
 
     return res.status(200).json({ user, donghua });

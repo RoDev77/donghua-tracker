@@ -25,7 +25,11 @@ module.exports = async function handler(req, res) {
   try {
     if (req.method === 'GET') {
       const snap = await col.get();
-      const items = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      const items = snap.docs.map(doc => {
+        const data = doc.data();
+        const cover = String(data.cover || '').replace(/against-the-gods\.jpe?g$/i, 'assets/covers/against-the-gods.webp');
+        return { id: doc.id, ...data, cover };
+      });
       items.sort((a, b) => Number(a.id) - Number(b.id));
       return res.status(200).json(items);
     }

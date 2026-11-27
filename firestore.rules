@@ -1,0 +1,15 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Semua akses data melewati serverless function Vercel dengan Firebase Admin SDK.
+    // Admin SDK tidak tunduk pada aturan ini, jadi client diblokir total.
+    match /donghua/{document} {
+      allow read, write: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

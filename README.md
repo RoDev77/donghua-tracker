@@ -6,6 +6,7 @@ Pencatat riwayat menonton Donghua. Saat di-deploy di Vercel, data disimpan di **
 - Project Vercel: `rodiiis-projects/donghua-tracker`
 - Environment variable yang dibutuhkan: `FIREBASE_SERVICE_ACCOUNT` (isi JSON service account Firebase Admin SDK). Jangan pernah menyimpan kunci ini di frontend.
 - Firestore collection: `donghua`
+- `firestore.rules`: menolak akses langsung dari client (data hanya lewat serverless function dengan Admin SDK)
 
 ## Seed data awal
 ```bash

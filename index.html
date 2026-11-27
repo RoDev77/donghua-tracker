@@ -695,7 +695,10 @@
       const res = await fetch(API_URL, { cache: 'no-store' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const items = await res.json();
-      data = Array.isArray(items) ? items : [];
+      data = Array.isArray(items) ? items.map(item => {
+        const n = Number(item.id);
+        return { ...item, id: Number.isFinite(n) ? n : item.id };
+      }) : [];
     } catch (e) {
       toast('⚠️ Gagal memuat data dari Firestore');
       data = [];
@@ -845,6 +848,7 @@
     $('saveBtn').textContent = id ? '💾 Perbarui' : '💾 Simpan';
     if (id) {
       const d = data.find(x => x.id === id);
+      if (!d) { toast('⚠️ Data tidak ditemukan, muat ulang halaman'); return; }
       $('editId').value = d.id;
       $('judul').value = d.judul;
       ensureOption($('hari'), d.hari);
@@ -888,6 +892,7 @@
     const id = $('editId').value;
     if (id) {
       const idx = data.findIndex(x => x.id === Number(id));
+      if (idx < 0) { toast('⚠️ Data tidak ditemukan, muat ulang halaman'); return; }
       data[idx] = { ...data[idx], ...payload };
       toast('✅ Data berhasil diperbarui');
     } else {
@@ -901,6 +906,7 @@
 
   function watchNext(id) {
     const d = data.find(x => x.id === id);
+    if (!d) { toast('⚠️ Data tidak ditemukan, muat ulang halaman'); return; }
     const last = String(d.lastEp ?? '');
     if (/END/i.test(last)) {
       toast('🏁 Episode sudah ditandai [END]');
@@ -919,8 +925,9 @@
   }
 
   function askDelete(id) {
-    deleteId = id;
     const d = data.find(x => x.id === id);
+    if (!d) { toast('⚠️ Data tidak ditemukan, muat ulang halaman'); return; }
+    deleteId = id;
     $('confirmText').textContent = `Yakin hapus "${d.judul}" dari daftar?`;
     openModal('confirmModal');
   }

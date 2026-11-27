@@ -372,26 +372,26 @@
   .profile-actions .btn { flex: 1 1 auto; }
   .profile-footnote { margin-top: 14px; font-size: 10.5px; color: var(--muted); text-align: center; }
   .profile-btn {
-    padding: 5px 12px 5px 6px; border-radius: 99px; gap: 9px;
+    padding: 4px 10px 4px 4px !important; border-radius: 99px !important; gap: 7px !important;
+    min-height: 34px; max-height: 34px;
     background: linear-gradient(135deg, rgba(88,101,242,.20), rgba(139,123,255,.10));
     border: 1px solid rgba(139,123,255,.32);
   }
   .profile-btn:hover { border-color: var(--accent-2); background: linear-gradient(135deg, rgba(88,101,242,.28), rgba(139,123,255,.18)); }
-  .profile-btn .avatar-wrap { position: relative; width: 32px; height: 32px; flex: none; }
+  .profile-btn .avatar-wrap { position: relative; width: 24px; height: 24px; flex: none; }
   .profile-btn .avatar-mini {
-    width: 32px; height: 32px; border-radius: 50%; object-fit: cover; display: block;
-    border: 2px solid rgba(255,255,255,.18);
+    width: 24px; height: 24px; border-radius: 50% !important; object-fit: cover; display: block;
+    border: 1.5px solid rgba(255,255,255,.2);
   }
   .profile-btn .avatar-wrap::after {
-    content: ''; position: absolute; right: -1px; bottom: -1px; width: 9px; height: 9px;
-    border-radius: 50%; background: var(--ongoing); border: 2px solid var(--panel);
-    box-shadow: 0 0 8px rgba(52,211,153,.6);
+    content: ''; position: absolute; right: -1px; bottom: -1px; width: 7px; height: 7px;
+    border-radius: 50%; background: var(--ongoing); border: 1.5px solid var(--panel);
   }
   .profile-btn .profile-name {
-    font-size: 12.5px; font-weight: 800; max-width: 130px;
+    font-size: 11px; font-weight: 800; max-width: 86px;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
-  .profile-btn .profile-chev { color: var(--muted); font-size: 11px; margin-left: -3px; }
+  .profile-btn .profile-chev { color: var(--muted); font-size: 10px; margin-left: -3px; }
 
   /* Confirm */
   .confirm .modal { width: min(420px, 100%); }

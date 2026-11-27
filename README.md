@@ -1,29 +1,31 @@
 # Donghua Tracker
 
-Website sederhana untuk mencatat riwayat menonton donghua. Data disimpan di browser melalui `localStorage`.
+Pencatat riwayat menonton Donghua. Saat di-deploy di Vercel, data disimpan di **Cloud Firestore** melalui serverless function. Saat file `index.html` dibuka langsung dari komputer (`file://`), data tetap memakai `localStorage` sebagai fallback.
 
-## Cara pakai
-Buka `index.html` di browser, lalu tambah/edit data donghua.
+## Deploy
+- Project Vercel: `rodiiis-projects/donghua-tracker`
+- Environment variable yang dibutuhkan: `FIREBASE_SERVICE_ACCOUNT` (isi JSON service account Firebase Admin SDK). Jangan pernah menyimpan kunci ini di frontend.
+- Firestore collection: `donghua`
 
-## Field yang tersedia
-- Judul
-- Hari Update
-- Episode Terakhir Nonton
-- Lanjut Episode
-- Season
-- Status (Ongoing / Completed / Hiatus / Libur)
-- Nonton Via
+## Seed data awal
+```bash
+GOOGLE_APPLICATION_CREDENTIALS=/path/ke/service-account.json npm run seed
+```
 
-Nilai episode disimpan apa adanya sesuai catatan asli (misalnya `26 [END]`, `Lanjut S2`, `164 Tengah`).
-Status dan season merujuk ke serial donghuanya; tanda selesai menonton dituliskan dengan `[END]` pada kolom episode.
+## API
+- `GET /api/donghua` — ambil semua data
+- `PUT /api/donghua` — timpa seluruh data dengan array yang dikirim
 
 ## Fitur
+- Field: Judul, Hari Update, Episode Terakhir Nonton, Lanjut Episode, Season, Status, Nonton Via
+- Nilai episode disimpan apa adanya (misalnya `26 [END]`, `Lanjut S2`, `164 Tengah`)
+- Status & season merujuk ke serial donghuanya; tanda selesai menonton dituliskan dengan `[END]` pada kolom episode
 - Tambah, edit, hapus data
 - Pencarian dan filter status/hari
 - Statistik ringkas
 - Ekspor/impor JSON
-- Tombol cepat untuk menandai episode selesai ditonton
-- Toggle tema gelap/terang (tersimpan di browser)
-- Pilihan tampilan Tabel / Kartu (tersimpan di browser)
+- Toggle tema gelap/terang
+- Pilihan tampilan Tabel / Kartu
 - Tampilan kartu responsif di layar kecil
 - Tombol kembali ke atas dan favicon khusus
+- Tombol cepat untuk menandai episode selesai ditonton

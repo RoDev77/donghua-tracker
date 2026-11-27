@@ -1,0 +1,24 @@
+{
+  "name": "donghua-tracker",
+  "version": "1.0.0",
+  "description": "Pencatat riwayat menonton Donghua dengan data tersimpan di Firestore.",
+  "main": "api/donghua.js",
+  "scripts": {
+    "seed": "node scripts/seed.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RoDev77/donghua-tracker.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/RoDev77/donghua-tracker/issues"
+  },
+  "homepage": "https://github.com/RoDev77/donghua-tracker#readme",
+  "dependencies": {
+    "firebase-admin": "^14.5.1"
+  }
+}

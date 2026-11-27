@@ -677,17 +677,46 @@
     $('toTop').classList.toggle('show', window.scrollY > 320);
   }, { passive: true });
 
-  function load() {
+  const API_URL = '/api/donghua';
+  const useApi = () => location.protocol !== 'file:';
+
+  async function load() {
+    if (!useApi()) {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        data = raw ? JSON.parse(raw) : [...seed];
+        if (!raw) save();
+      } catch (e) {
+        data = [...seed];
+      }
+      return;
+    }
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      data = raw ? JSON.parse(raw) : [...seed];
-      if (!raw) save();
+      const res = await fetch(API_URL, { cache: 'no-store' });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const items = await res.json();
+      data = Array.isArray(items) ? items : [];
     } catch (e) {
-      data = [...seed];
+      toast('⚠️ Gagal memuat data dari Firestore');
+      data = [];
     }
   }
-  function save() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+  async function save() {
+    if (!useApi()) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      return;
+    }
+    try {
+      const res = await fetch(API_URL, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+    } catch (e) {
+      toast('❌ Gagal menyimpan ke Firestore');
+    }
   }
   function toast(msg) {
     const t = $('toast');
@@ -944,8 +973,10 @@
   }
 
   applyTheme(localStorage.getItem(THEME_KEY) || 'dark');
-  load();
-  setView(viewMode);
+  (async () => {
+    await load();
+    setView(viewMode);
+  })();
 </script>
 </body>
 </html>

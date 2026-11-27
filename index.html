@@ -649,7 +649,6 @@
     </div>
     <div class="header-actions" id="headerActions">
       <button class="btn btn-ghost" id="discordBtn" onclick="discordAction()" style="display:none">🔐 Login Discord</button>
-      <button class="btn btn-ghost" id="themeBtn" onclick="toggleTheme()" title="Ganti tema">🌙</button>
       <input type="file" id="importFile" accept="application/json" hidden onchange="importData(event)" />
       <button class="btn btn-ghost" id="findUserBtn" onclick="openUserSearch()" title="Cari pengguna" style="display:none">🔍 Cari User</button>
       <button class="btn btn-primary" onclick="openForm()">＋ Tambah Donghua</button>
@@ -1051,7 +1050,8 @@
 
   function applyTheme(theme) {
     document.documentElement.dataset.theme = theme;
-    $('themeBtn').textContent = theme === 'light' ? '☀️' : '🌙';
+    const btn = $('themeBtn');
+    if (btn) btn.textContent = theme === 'light' ? '☀️' : '🌙';
     localStorage.setItem(THEME_KEY, theme);
   }
 

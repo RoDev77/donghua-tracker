@@ -39,6 +39,7 @@ module.exports = async function handler(req, res) {
         batch.set(col.doc(String(item.id)), {
           judul: String(item.judul || ''),
           judulLain: String(item.judulLain || ''),
+          cover: String(item.cover || ''),
           hari: String(item.hari || ''),
           lastEp: String(item.lastEp ?? ''),
           nextEp: String(item.nextEp ?? ''),

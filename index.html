@@ -220,10 +220,12 @@
   .title-avatar {
     width: 30px; height: 30px; border-radius: 9px; flex: none;
     display: grid; place-items: center; font-size: 13px; font-weight: 800;
+    position: relative; overflow: hidden;
     color: hsl(var(--hue) 85% 78%);
     background: hsl(var(--hue) 70% 50% / .16);
     border: 1px solid hsl(var(--hue) 70% 60% / .28);
   }
+  .title-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
   .sub { color: var(--muted); font-size: 11px; margin-top: 3px; }
   .title-meta { display: flex; align-items: center; gap: 8px; margin-top: 4px; flex-wrap: wrap; }
   .sub-id { color: var(--muted); font-size: 10px; font-weight: 700; }
@@ -708,6 +710,10 @@
           <label>Judul Lain <span class="hint">(judul alternatif / judul komik / judul WeTV)</span></label>
           <input type="text" id="judulLain" placeholder="Contoh: 仙逆 / Renegade Immortal (WeTV)" />
         </div>
+        <div class="field full">
+          <label>Cover / Logo <span class="hint">(URL gambar, misalnya dari Anichin)</span></label>
+          <input type="text" id="cover" placeholder="https://anichin.moe/wp-content/uploads/...webp" />
+        </div>
         <div class="field">
           <label>Hari Update</label>
           <select id="hari">
@@ -785,13 +791,13 @@
   // Nilai episode disimpan apa adanya (termasuk [END], "Lanjut S2", "164 Tengah", dll).
   // Status & season berasal dari serial donghuanya, bukan dari progres nonton.
   const seed = [
-    { id: 1, judul: '100.000 Years Of Refining Qi', hari: '', lastEp: '137', nextEp: '138', season: 'Season 1', status: 'Ongoing', via: '', seringDitonton: true },
+    { id: 1, judul: '100.000 Years Of Refining Qi', cover: 'https://anichin.moe/wp-content/uploads/2023/02/100.000-Years-of-Refining-Qi-1-214x300.jpg', hari: '', lastEp: '137', nextEp: '138', season: 'Season 1', status: 'Ongoing', via: '', seringDitonton: true },
     { id: 2, judul: 'Against the Sky Supreme', judulLain: 'Melawan Penguasa Langit', hari: '', lastEp: '212', nextEp: '213', season: 'Season 1', status: 'Ongoing', via: 'WeTV' },
     { id: 3, judul: 'Ancient God Sovereign', hari: '', lastEp: '03', nextEp: '04', season: 'Season 1', status: 'Ongoing', via: '' },
     { id: 4, judul: 'Apotheosis', hari: '', lastEp: '40', nextEp: '41', season: 'Season 1', status: 'Ongoing', via: '' },
-    { id: 5, judul: 'Azure Legacy', hari: '', lastEp: '105', nextEp: '106', season: '', status: 'Ongoing', via: '', seringDitonton: true },
+    { id: 5, judul: 'Azure Legacy', cover: 'https://anichin.moe/wp-content/uploads/2023/06/Azure-Legacy-Season-3-Subtitle-Indonesia.webp', hari: '', lastEp: '105', nextEp: '106', season: '', status: 'Ongoing', via: '', seringDitonton: true },
     { id: 6, judul: 'Battle Through the Heavens', hari: '', lastEp: '67', nextEp: '67', season: 'Season 5', status: 'Ongoing', via: '' },
-    { id: 7, judul: 'Beyond Time’s Gaze', hari: 'Sabtu', lastEp: '49', nextEp: '50', season: 'Season 1', status: 'Ongoing', via: '', seringDitonton: true },
+    { id: 7, judul: 'Beyond Time’s Gaze', cover: 'https://anichin.moe/wp-content/uploads/2025/12/Beyond-Times-Gaze-2-Subtitle-Indonesia.webp', hari: 'Sabtu', lastEp: '49', nextEp: '50', season: 'Season 1', status: 'Ongoing', via: '', seringDitonton: true },
     { id: 8, judul: 'Everyone in the Sect Except Me is an Undercover Agent', hari: '', lastEp: '14', nextEp: '15', season: 'Season 1', status: 'Ongoing', via: '' },
     { id: 9, judul: 'Five Elements God Of War', hari: '', lastEp: '03', nextEp: '04', season: 'Season 1', status: 'Ongoing', via: '' },
     { id: 10, judul: 'Glorious Revenge of Ye Feng', hari: '', lastEp: '24', nextEp: '25', season: 'Season 1', status: 'Completed', via: '' },
@@ -807,13 +813,13 @@
     { id: 20, judul: 'Peak of True Martial Arts', hari: 'Rabu/Sabtu/Minggu', lastEp: '97', nextEp: '98', season: 'Season 2', status: 'Ongoing', via: '' },
     { id: 21, judul: 'Perfect World', hari: 'Jumat', lastEp: '139', nextEp: '140', season: 'Season 2', status: 'Ongoing', via: '' },
     { id: 22, judul: 'Player Sultan [Wealth and Wonder]', hari: '', lastEp: '1', nextEp: '2', season: 'Season 1', status: 'Ongoing', via: '' },
-    { id: 23, judul: 'Renegade Immortal', hari: 'Senin', lastEp: '168', nextEp: '169', season: 'Season 1', status: 'Ongoing', via: 'WeTV', seringDitonton: true },
+    { id: 23, judul: 'Renegade Immortal', cover: 'https://anichin.moe/wp-content/uploads/2023/09/RENEGADE-IMMORTAL-SUBTITLE-INDONESIA-3.webp', hari: 'Senin', lastEp: '168', nextEp: '169', season: 'Season 1', status: 'Ongoing', via: 'WeTV', seringDitonton: true },
     { id: 24, judul: 'Return of The Immortal Emperor', hari: '', lastEp: '16', nextEp: '17', season: 'Season 1', status: 'Hiatus', via: '' },
     { id: 25, judul: 'Soul Land', hari: '', lastEp: '265', nextEp: '~', season: 'Season 2', status: 'Completed', via: '' },
     { id: 26, judul: 'Stellar Transformation', judulLain: 'Transformasi Bintang', hari: '', lastEp: '13', nextEp: '14', season: 'Season 5', status: 'Ongoing', via: 'WeTV' },
     { id: 27, judul: 'Supreme God Emperor', judulLain: 'Kaisar Dewa Tertinggi', hari: '', lastEp: '626', nextEp: '627', season: '', status: 'Ongoing', via: 'WeTV' },
     { id: 28, judul: 'Swallowed Star', hari: 'Selasa', lastEp: '164', nextEp: '164 Tengah', season: 'Season 3', status: 'Ongoing', via: '' },
-    { id: 29, judul: 'Tales of Herding Gods', hari: 'Minggu', lastEp: '110', nextEp: '111', season: 'Season 1', status: 'Ongoing', via: 'Anichin', seringDitonton: true },
+    { id: 29, judul: 'Tales of Herding Gods', cover: 'https://anichin.moe/wp-content/uploads/2024/10/converted-107.webp', hari: 'Minggu', lastEp: '110', nextEp: '111', season: 'Season 1', status: 'Ongoing', via: 'Anichin', seringDitonton: true },
     { id: 30, judul: 'The Adventure\'s of Yang Chen', hari: '', lastEp: '38', nextEp: '39', season: 'Season 1', status: 'Ongoing', via: '' },
     { id: 31, judul: 'The Emperor of Myriad Realms', hari: '', lastEp: '37', nextEp: '38', season: '', status: 'Completed', via: '' },
     { id: 32, judul: 'The Eternal Strife', hari: '', lastEp: '2', nextEp: '3', season: 'Season 1', status: 'Ongoing', via: '' },
@@ -1073,6 +1079,15 @@
     toast('🎲 Pilihan hari ini: ' + pick.judul);
   }
 
+  function avatarHTML(d) {
+    const hue = hueOf(d.judul);
+    const initial = esc(String(d.judul).charAt(0).toUpperCase());
+    const img = d.cover
+      ? `<img src="${esc(d.cover)}" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()" />`
+      : '';
+    return `<span class="title-avatar" style="--hue:${hue}">${initial}${img}</span>`;
+  }
+
   function hueOf(s) {
     let h = 0;
     for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) % 360;
@@ -1150,7 +1165,7 @@
       <div class="featured-card" onclick="focusJudul(decodeURIComponent('${encodeURIComponent(d.judul)}'))" title="Lihat ${esc(d.judul)}">
         <div class="featured-rank">${String(i + 1).padStart(2, '0')}</div>
         <div class="featured-title">
-          <span class="title-avatar" style="--hue:${hueOf(d.judul)}">${esc(String(d.judul).charAt(0).toUpperCase())}</span>
+          ${avatarHTML(d)}
           <div style="min-width:0">
             <div class="title-cell">${esc(d.judul)}</div>
             ${d.judulLain ? `<span class="alt-chip" style="margin-top:5px"><span class="alt-chip-label">⇄ ALT</span>${esc(d.judulLain)}</span>` : ''}
@@ -1170,7 +1185,7 @@
       <tr>
         <td data-label="Judul">
           <div class="title-cell">
-            <span class="title-avatar" style="--hue:${hueOf(d.judul)}">${esc(String(d.judul).charAt(0).toUpperCase())}</span>
+            ${avatarHTML(d)}
             <span>${esc(d.judul)}</span>
           </div>
           <div class="title-meta">
@@ -1197,7 +1212,7 @@
     $('cardGrid').innerHTML = filtered.map(d => `
       <div class="donghua-card">
         <div class="card-top">
-          <span class="title-avatar" style="--hue:${hueOf(d.judul)}">${esc(String(d.judul).charAt(0).toUpperCase())}</span>
+          ${avatarHTML(d)}
           <div style="flex:1;min-width:0">
             <div class="title-cell">${esc(d.judul)}</div>
             <div class="title-meta">
@@ -1240,6 +1255,7 @@
       $('editId').value = d.id;
       $('judul').value = d.judul;
       $('judulLain').value = d.judulLain ?? '';
+      $('cover').value = d.cover ?? '';
       ensureOption($('hari'), d.hari);
       $('hari').value = d.hari || '';
       $('lastEp').value = d.lastEp ?? '';
@@ -1274,6 +1290,7 @@
     const payload = {
       judul,
       judulLain: $('judulLain').value.trim(),
+      cover: $('cover').value.trim(),
       hari: $('hari').value,
       lastEp: $('lastEp').value.trim(),
       nextEp: $('nextEp').value.trim(),
